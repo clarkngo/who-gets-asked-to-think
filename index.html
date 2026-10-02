@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ThinkCheck (pilot)</title>
+  <meta name="description" content="A pilot audit of how AI coding assistants explain code to novice programmers in English, Tagalog, and Mandarin.">
+  <style>
+    :root { --bg: #fdfdfb; --fg: #1d1d1b; --muted: #5c5c57; --accent: #2a5d8f; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #161615; --fg: #ececea; --muted: #a3a39d; --accent: #8ab8e6; }
+    }
+    body { background: var(--bg); color: var(--fg); margin: 0;
+           font: 17px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 42rem; margin: 0 auto; padding: 3rem 16px; }
+    h1 { font-size: 1.6rem; line-height: 1.3; margin-bottom: .25rem; }
+    .status { color: var(--muted); margin-top: 0; }
+    a { color: var(--accent); }
+    ol li { margin-bottom: .4rem; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Who Gets Asked to Think?</h1>
+  <p class="status">ThinkCheck · a pilot study · in progress (October 2026)</p>
+
+  <p>When novice programmers ask AI coding assistants for help, do the answers help them judge the
+  code (by explaining how it works, stating its limits, or suggesting how to test it), or do they
+  just hand over the code? And does that change with what the novice asks for, or the language
+  they write in?</p>
+
+  <ol>
+    <li>How often do responses support evaluative judgment rather than just provide code?</li>
+    <li>Does this differ between "just make it" and "help me learn" requests?</li>
+    <li>Does it differ by language: English, Tagalog (Taglish), or Mandarin?</li>
+    <li>Is the generated code correct when run against hidden tests?</li>
+  </ol>
+
+  <p>This is an audit of AI models, not a study of learners. Methods, data, and results will be
+  posted here as the pilot completes. Source code:
+  <a href="https://github.com/clarkngo/who-gets-asked-to-think">GitHub repository</a>.</p>
+</main>
+</body>
+</html>

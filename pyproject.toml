@@ -1,0 +1,19 @@
+[project]
+name = "thinkcheck"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=1.11.0",
+    "google-genai>=2.28.0",
+    "matplotlib>=3.11.2",
+    "ollama>=0.6.3",
+    "pandas>=3.0.6",
+    "python-dotenv>=1.2.4",
+    "pyyaml>=6.0.3",
+    "scikit-learn>=1.9.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

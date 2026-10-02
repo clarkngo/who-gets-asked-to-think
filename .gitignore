@@ -1,0 +1,26 @@
+# Secrets: never commit
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# Scratch output from sandboxed runs (raw data in data/raw/ IS committed)
+sandbox_tmp/
+
+# Hidden tests + reference solutions stay private until the pilot run is done
+# (avoids them leaking into model training data before we query the models).
+drafts/sample_tasks/
+tasks/*/test_spec.py
+tasks/*/reference.py
