@@ -1,0 +1,82 @@
+# HOKKIEN / ENGLISH SHEET (Chinoy Hokkien, informal romanization, the way it's texted)
+#
+# Written by Clark, not drafted by Claude. Every item's provenance is clark-written.
+#
+# STAGE 1 (now): comprehension test. Just the two framings + T01 and T14.
+#   Each model is asked separately to "translate this into English", and Clark judges whether
+#   it understood. The result decides whether Hokkien joins the audit (see drafts/PLAN.md).
+# STAGE 2 (if it goes ahead): `subset` grows to 8 tasks, and the same rules apply.
+#
+# For each item: replace TODO under `translation: |` (keep the 6-space indent), then set
+# status to draft or final. Leave provenance as clark-written.
+#
+# Rules (the checker enforces 1-3):
+#  1. Everything under keep_verbatim must appear EXACTLY as written: function names, example
+#     calls, and quoted values. These are what the hidden tests check.
+#  2. Each framing must contain {spec} exactly once.
+#  3. Don't edit the `english:` fields.
+#  4. Write it the way you'd actually text it: informal romanization, mixed with English (and
+#     Tagalog, if that's natural). Don't normalise to POJ/Tâi-lô, because the informal texting
+#     style IS the condition.
+#  5. Use `notes:` for spelling choices a reader might need (e.g. "used 'bo' for 無").
+#
+# Check your work any time:   uv run python scripts/check_translations.py nan
+language: nan
+variety: Chinoy Hokkien (Lannang-oe), informal romanization mixed with English
+translator: Clark Ngo
+subset: [T01, T14]   # tasks this sheet covers; the checker only requires these
+
+framings:
+  make:
+    english: |
+      {spec}
+
+      can you just write it for me? i just need it to work.
+    translation: |
+      TODO
+    status: todo
+    provenance: clark-written
+    notes: ""
+  learn:
+    english: |
+      i'm learning python and i want to actually understand this, not just copy it.
+
+      {spec}
+
+      can you help me learn how to do it?
+    translation: |
+      TODO
+    status: todo
+    provenance: clark-written
+    notes: ""
+
+tasks:
+  T01:  # split_bill
+    english: |
+      i need a python function called split_bill(total, people, tip_percent). it should add the tip
+      to the total and then split it evenly, so it returns how much each person pays, rounded to 2
+      decimal places. for example split_bill(100, 4, 20) should give 30.0
+    keep_verbatim:
+      - 'split_bill(total, people, tip_percent)'
+      - 'split_bill(100, 4, 20)'
+      - '30.0'
+    translation: |
+      TODO
+    status: todo
+    provenance: clark-written
+    notes: ""
+  T14:  # seats_left
+    english: |
+      write a python function seats_left(capacity, bookings) for a small bus. bookings is a list of
+      numbers. a positive number means that many seats get booked. a negative number means that many
+      seats got cancelled. if a booking asks for more seats than are left, skip that booking completely.
+      return how many seats are left at the end. for example seats_left(10, [4, 5, 3, -2]) should return 3
+    keep_verbatim:
+      - 'seats_left(capacity, bookings)'
+      - 'seats_left(10, [4, 5, 3, -2])'
+      - '3'
+    translation: |
+      TODO
+    status: todo
+    provenance: clark-written
+    notes: ""

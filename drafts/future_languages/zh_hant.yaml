@@ -1,0 +1,411 @@
+# HOW TO FILL IN THIS SHEET (Chinoy Mandarin, Traditional 繁體)
+#
+# Claude has drafted every item (status: draft, provenance: claude-draft). For each one:
+#   - read the draft next to the English, then edit the text under `translation: |` if needed;
+#   - set provenance to clark-reviewed (no changes) or clark-edited (you changed it);
+#   - set status to final.
+#
+# Rules (the checker enforces 1-3 and 6):
+#  1. Everything listed under keep_verbatim must appear EXACTLY as written: function names,
+#     example calls, and quoted values like "HALF" or "cold". Use ASCII straight quotes "..."
+#     and ASCII commas/brackets inside code, NOT “ ” or ，（）. These are what the hidden tests
+#     check, so they cannot be translated (e.g. keep "cold", not "冷").
+#  2. Each framing must contain {spec} exactly once, which is where the task text goes.
+#  3. Don't edit the `english:` fields. They're there for reference, and the checker warns if
+#     they no longer match prompts/en.yaml.
+#  4. Write it the way a Filipino-Chinese (Chinoy) beginner would actually type it: Mandarin
+#     with English tech and everyday words mixed in (function, list, dictionary, return, tip,
+#     bus, roommate), e.g. 跟 rather than 和, 巴士/bus rather than 公交车. Traditional characters.
+#  5. Use `notes:` for anything a reader should know.
+#  6. PROVENANCE: every item starts as `provenance: claude-draft`. When you've reviewed it, set
+#     provenance to clark-reviewed (no changes) or clark-edited (you changed it), and status
+#     to final. The checker won't accept final + claude-draft.
+#
+# Check your work any time:   uv run python scripts/check_translations.py zh_hant
+language: zh_hant
+variety: Chinoy Mandarin, Traditional
+translator: Clark Ngo
+
+framings:
+  make:
+    english: |
+      {spec}
+
+      can you just write it for me? i just need it to work.
+    translation: |
+      {spec}
+
+      你可以直接幫我寫出來嗎？我只要它 can run 就行了。
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  learn:
+    english: |
+      i'm learning python and i want to actually understand this, not just copy it.
+
+      {spec}
+
+      can you help me learn how to do it?
+    translation: |
+      我在學 python，我想要真的 understand 這個，不是只有 copy 而已。
+
+      {spec}
+
+      你可以教我怎麼做嗎？
+    status: draft
+    provenance: claude-draft
+    notes: ""
+
+tasks:
+  T01:  # split_bill
+    english: |
+      i need a python function called split_bill(total, people, tip_percent). it should add the tip
+      to the total and then split it evenly, so it returns how much each person pays, rounded to 2
+      decimal places. for example split_bill(100, 4, 20) should give 30.0
+    keep_verbatim:
+      - 'split_bill(total, people, tip_percent)'
+      - 'split_bill(100, 4, 20)'
+      - '30.0'
+    translation: |
+      我要一個 python function 叫 split_bill(total, people, tip_percent)。它先把 tip 加到 total 上，然後平分，return 每個人要付多少錢，round 到小數點後 2 位。比如 split_bill(100, 4, 20) 應該會得到 30.0
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T02:  # longest_streak
+    english: |
+      i'm tracking which days i practiced guitar as a list of True/False, one per day. write a python
+      function longest_streak(days) that returns the longest number of days in a row i practiced.
+      for example longest_streak([True, True, False, True, True, True, False]) should return 3
+    keep_verbatim:
+      - 'longest_streak(days)'
+      - 'longest_streak([True, True, False, True, True, True, False])'
+      - '3'
+      - 'True'
+      - 'False'
+    translation: |
+      我在 track 我哪幾天有練 guitar，用一個 True/False 的 list，一天一個。寫一個 python function longest_streak(days)，return 我連續練習最多的天數。比如 longest_streak([True, True, False, True, True, True, False]) 應該 return 3
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T03:  # to_minutes
+    english: |
+      write a python function to_minutes(time_text) that takes a time like "7:05 PM" and returns how
+      many minutes have passed since midnight. so to_minutes("7:05 PM") should be 1145. the time is
+      always written like H:MM then a space then AM or PM. 12:00 AM is midnight and 12:00 PM is noon.
+    keep_verbatim:
+      - 'to_minutes(time_text)'
+      - 'to_minutes("7:05 PM")'
+      - '1145'
+      - '"7:05 PM"'
+      - 'H:MM'
+      - 'AM'
+      - 'PM'
+      - '12:00 AM'
+      - '12:00 PM'
+    translation: |
+      寫一個 python function to_minutes(time_text)，input 是像 "7:05 PM" 這樣的時間，return 從半夜開始已經過了幾分鐘。所以 to_minutes("7:05 PM") 應該是 1145。時間都是寫成 H:MM，然後一個 space，然後 AM 或 PM。12:00 AM 是半夜，12:00 PM 是中午。
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T04:  # merge_lists
+    english: |
+      me and my roommate each have a shopping list as a python dictionary of item name to quantity.
+      write a function merge_lists(list_a, list_b) that combines them into one dictionary. if the same
+      item is on both lists add the quantities together. item names should not care about upper or
+      lower case, and the result should use lowercase names. example:
+      merge_lists({"Eggs": 6, "milk": 1}, {"eggs": 12, "Bread": 2}) gives {"eggs": 18, "milk": 1, "bread": 2}
+    keep_verbatim:
+      - 'merge_lists(list_a, list_b)'
+      - 'merge_lists({"Eggs": 6, "milk": 1}, {"eggs": 12, "Bread": 2})'
+      - '{"eggs": 18, "milk": 1, "bread": 2}'
+      - '"Eggs"'
+      - '"milk"'
+      - '"eggs"'
+      - '"Bread"'
+      - '"bread"'
+    translation: |
+      我跟我 roommate 每個人有一個 shopping list，是 python dictionary，item name 對應 quantity。寫一個 function merge_lists(list_a, list_b)，把它們合成一個 dictionary。如果同一個 item 兩個 list 都有，就把 quantity 加起來。item name 不管大寫小寫都算一樣，結果要用小寫的名字。例子：merge_lists({"Eggs": 6, "milk": 1}, {"eggs": 12, "Bread": 2}) 會得到 {"eggs": 18, "milk": 1, "bread": 2}
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T05:  # best_average
+    english: |
+      i have a dictionary of student names to a list of their quiz scores. write a python function
+      best_average(scores) that returns the name of the student with the highest average score. if two
+      students tie, return the name that comes first alphabetically.
+      for example best_average({"Ana": [80, 90], "Ben": [100, 60, 95], "Chen": [70]}) should return "Ana"
+    keep_verbatim:
+      - 'best_average(scores)'
+      - 'best_average({"Ana": [80, 90], "Ben": [100, 60, 95], "Chen": [70]})'
+      - '"Ana"'
+      - '"Ben"'
+      - '"Chen"'
+    translation: |
+      我有一個 dictionary，學生的名字對應他們的 quiz score list。寫一個 python function best_average(scores)，return average 最高的學生的名字。如果兩個學生同分 (tie)，就 return alphabetical order 比較前面的名字。比如 best_average({"Ana": [80, 90], "Ben": [100, 60, 95], "Chen": [70]}) 應該 return "Ana"
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T06:  # temperature_label
+    english: |
+      write a python function temperature_label(celsius) that gives a word for the weather. below 10
+      is "cold", 25 or above is "hot", and anything in between is "mild". for example
+      temperature_label(30) should return "hot"
+    keep_verbatim:
+      - 'temperature_label(celsius)'
+      - 'temperature_label(30)'
+      - '"hot"'
+      - '"cold"'
+      - '"mild"'
+    translation: |
+      寫一個 python function temperature_label(celsius)，用一個字來講天氣。低於 10 是 "cold"，25 或以上是 "hot"，中間的都是 "mild"。比如 temperature_label(30) 應該 return "hot"
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T07:  # count_long_words
+    english: |
+      write a python function count_long_words(sentence, min_length) that counts how many words in the
+      sentence have at least min_length letters. the words are separated by single spaces. for example
+      count_long_words("i love writing small programs", 5) should return 3
+    keep_verbatim:
+      - 'count_long_words(sentence, min_length)'
+      - 'count_long_words("i love writing small programs", 5)'
+      - '3'
+      - '"i love writing small programs"'
+    translation: |
+      寫一個 python function count_long_words(sentence, min_length)，算 sentence 裡面有幾個 word 至少有 min_length 個字母。word 跟 word 中間是一個 space。比如 count_long_words("i love writing small programs", 5) 應該 return 3
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T08:  # initials
+    english: |
+      write a python function initials(full_name) that takes a name with the words separated by single
+      spaces and returns the first letter of each word in uppercase, each followed by a dot. for example
+      initials("maria clara santos") should return "M.C.S."
+    keep_verbatim:
+      - 'initials(full_name)'
+      - 'initials("maria clara santos")'
+      - '"M.C.S."'
+      - '"maria clara santos"'
+    translation: |
+      寫一個 python function initials(full_name)，input 是一個名字，每個字中間有一個 space，return 每個字的第一個字母，要大寫，每個字母後面加一個點。比如 initials("maria clara santos") 應該 return "M.C.S."
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T09:  # days_met_goal
+    english: |
+      i have a list of how many steps i walked each day. write a python function
+      days_met_goal(steps, goal) that returns how many days i walked at least goal steps. for example
+      days_met_goal([8000, 12000, 10000, 4000], 10000) should return 2
+    keep_verbatim:
+      - 'days_met_goal(steps, goal)'
+      - 'days_met_goal([8000, 12000, 10000, 4000], 10000)'
+      - '2'
+    translation: |
+      我有一個 list，記我每天走了多少 steps。寫一個 python function days_met_goal(steps, goal)，return 我有幾天走了至少 goal 步。比如 days_met_goal([8000, 12000, 10000, 4000], 10000) 應該 return 2
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T10:  # price_after_coupon
+    english: |
+      write a python function price_after_coupon(price, coupon). if the coupon is "HALF" the price is
+      cut in half. if the coupon is "TENOFF" take 10 off the price, but the price can never go below 0.
+      any other coupon does nothing and you just get the normal price. for example
+      price_after_coupon(30, "TENOFF") should return 20
+    keep_verbatim:
+      - 'price_after_coupon(price, coupon)'
+      - 'price_after_coupon(30, "TENOFF")'
+      - '20'
+      - '"HALF"'
+      - '"TENOFF"'
+    translation: |
+      寫一個 python function price_after_coupon(price, coupon)。如果 coupon 是 "HALF"，price 就減一半。如果 coupon 是 "TENOFF"，price 減 10，可是 price 不可以低於 0。其他的 coupon 都沒有用，就是原價。比如 price_after_coupon(30, "TENOFF") 應該 return 20
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T11:  # group_by_first_letter
+    english: |
+      write a python function group_by_first_letter(names) that takes a list of names and returns a
+      dictionary. the keys are the first letter of the names in uppercase, and each value is the list of
+      names that start with that letter, in the same order they were in the original list. keep the
+      names spelled exactly as they were. for example
+      group_by_first_letter(["ana", "Ben", "alex", "bea"]) should return {"A": ["ana", "alex"], "B": ["Ben", "bea"]}
+    keep_verbatim:
+      - 'group_by_first_letter(names)'
+      - 'group_by_first_letter(["ana", "Ben", "alex", "bea"])'
+      - '{"A": ["ana", "alex"], "B": ["Ben", "bea"]}'
+      - '"ana"'
+      - '"Ben"'
+      - '"alex"'
+      - '"bea"'
+      - '"A"'
+      - '"B"'
+    translation: |
+      寫一個 python function group_by_first_letter(names)，input 是一個名字的 list，return 一個 dictionary。key 是名字第一個字母的大寫，每個 value 是用那個字母開頭的名字 list，順序跟原本的 list 一樣。名字的 spelling 不要改。比如 group_by_first_letter(["ana", "Ben", "alex", "bea"]) 應該 return {"A": ["ana", "alex"], "B": ["Ben", "bea"]}
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T12:  # running_total
+    english: |
+      i'm tracking what i spend. write a python function running_total(expenses) that takes a list of
+      amounts and returns a new list where each number is the total spent so far. for example
+      running_total([5, 3, 10]) should return [5, 8, 18]
+    keep_verbatim:
+      - 'running_total(expenses)'
+      - 'running_total([5, 3, 10])'
+      - '[5, 8, 18]'
+    translation: |
+      我在 track 我花了多少錢。寫一個 python function running_total(expenses)，input 是一個 amount 的 list，return 一個新的 list，每個數字是到那時候為止總共花的錢。比如 running_total([5, 3, 10]) 應該 return [5, 8, 18]
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T13:  # censor
+    english: |
+      write a python function censor(text, banned) where text is a sentence with words separated by
+      single spaces and banned is a list of words. replace every word that is banned with stars, using
+      the same number of stars as the word has letters. upper or lower case shouldn't matter when
+      checking. all the other words stay exactly the same. for example
+      censor("this is so Darn annoying", ["darn"]) should return "this is so **** annoying"
+    keep_verbatim:
+      - 'censor(text, banned)'
+      - 'censor("this is so Darn annoying", ["darn"])'
+      - '"this is so **** annoying"'
+      - '"this is so Darn annoying"'
+      - '"darn"'
+    translation: |
+      寫一個 python function censor(text, banned)，text 是一個 sentence，word 中間是一個 space，banned 是一個 word 的 list。把每個 banned 的 word 換成星號 (stars)，星號的數量跟那個 word 的字母一樣多。check 的時候不管大寫小寫。其他的 word 都不要改。比如 censor("this is so Darn annoying", ["darn"]) 應該 return "this is so **** annoying"
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T14:  # seats_left
+    english: |
+      write a python function seats_left(capacity, bookings) for a small bus. bookings is a list of
+      numbers. a positive number means that many seats get booked. a negative number means that many
+      seats got cancelled. if a booking asks for more seats than are left, skip that booking completely.
+      return how many seats are left at the end. for example seats_left(10, [4, 5, 3, -2]) should return 3
+    keep_verbatim:
+      - 'seats_left(capacity, bookings)'
+      - 'seats_left(10, [4, 5, 3, -2])'
+      - '3'
+    translation: |
+      寫一個 python function seats_left(capacity, bookings)，是給一台小 bus 用的。bookings 是一個數字的 list。正數就是 book 了那麼多個 seat，負數就是 cancel 了那麼多個 seat。如果有一個 booking 要的 seat 比剩下的多，就整個 skip 掉那個 booking。return 最後還剩幾個 seat。比如 seats_left(10, [4, 5, 3, -2]) 應該 return 3
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T15:  # parse_scores
+    english: |
+      i have quiz scores saved as text like "Ana:90,Ben:75,Chen:88". write a python function
+      parse_scores(text) that turns it into a dictionary of name to score, where the score is an int.
+      for example parse_scores("Ana:90,Ben:75,Chen:88") should return {"Ana": 90, "Ben": 75, "Chen": 88}
+    keep_verbatim:
+      - 'parse_scores(text)'
+      - 'parse_scores("Ana:90,Ben:75,Chen:88")'
+      - '{"Ana": 90, "Ben": 75, "Chen": 88}'
+      - '"Ana:90,Ben:75,Chen:88"'
+      - '"Ana"'
+      - '"Ben"'
+      - '"Chen"'
+    translation: |
+      我的 quiz score 存成這樣的 text "Ana:90,Ben:75,Chen:88"。寫一個 python function parse_scores(text)，把它變成名字對應 score 的 dictionary，score 要是 int。比如 parse_scores("Ana:90,Ben:75,Chen:88") 應該 return {"Ana": 90, "Ben": 75, "Chen": 88}
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T16:  # minutes_until_next_bus
+    english: |
+      write a python function minutes_until_next_bus(schedule, now). schedule is a list of bus times
+      like ["06:30", "12:15", "18:45"] in 24 hour time, already sorted. now is the current time in the
+      same format. return how many minutes until the next bus. if a bus leaves exactly now, that counts
+      and the answer is 0. if there are no more buses today, return the minutes until the first bus
+      tomorrow. for example minutes_until_next_bus(["06:30", "12:15", "18:45"], "12:00") should return 15
+    keep_verbatim:
+      - 'minutes_until_next_bus(schedule, now)'
+      - 'minutes_until_next_bus(["06:30", "12:15", "18:45"], "12:00")'
+      - '15'
+      - '"06:30"'
+      - '"12:15"'
+      - '"18:45"'
+      - '"12:00"'
+    translation: |
+      寫一個 python function minutes_until_next_bus(schedule, now)。schedule 是一個 bus 時間的 list，像 ["06:30", "12:15", "18:45"]，是 24 小時制，已經 sort 好了。now 是現在的時間，format 一樣。return 還要幾分鐘才有下一班 bus。如果剛好有一班 bus 現在走，也算，答案是 0。如果今天已經沒有 bus 了，就 return 到明天第一班 bus 還要幾分鐘。比如 minutes_until_next_bus(["06:30", "12:15", "18:45"], "12:00") 應該 return 15
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T17:  # make_teams
+    english: |
+      write a python function make_teams(names, team_size) that splits a list of names into teams of
+      team_size, keeping the original order. the last team is allowed to be smaller, but if the last
+      team would only have 1 person, put that person into the team before it instead. return a list of
+      teams, where each team is a list of names. for example
+      make_teams(["a", "b", "c", "d", "e", "f", "g"], 3) should return [["a", "b", "c"], ["d", "e", "f", "g"]]
+    keep_verbatim:
+      - 'make_teams(names, team_size)'
+      - 'make_teams(["a", "b", "c", "d", "e", "f", "g"], 3)'
+      - '[["a", "b", "c"], ["d", "e", "f", "g"]]'
+      - '"a"'
+      - '"b"'
+      - '"c"'
+      - '"d"'
+      - '"e"'
+      - '"f"'
+      - '"g"'
+    translation: |
+      寫一個 python function make_teams(names, team_size)，照原本的順序把名字的 list 分成每隊 team_size 個人。最後一隊可以比較少人，可是如果最後一隊只有 1 個人，就把那個人放到前面那一隊。return 一個 team 的 list，每個 team 是一個名字的 list。比如 make_teams(["a", "b", "c", "d", "e", "f", "g"], 3) 應該 return [["a", "b", "c"], ["d", "e", "f", "g"]]
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T18:  # format_duration
+    english: |
+      write a python function format_duration(seconds) that takes a whole number of seconds and returns
+      it like "1h 5m 3s". leave out any part that is zero, so 3600 is just "1h" and 3601 is "1h 1s".
+      don't use days, so hours can go above 24. if seconds is 0 return "0s". for example
+      format_duration(3903) should return "1h 5m 3s"
+    keep_verbatim:
+      - 'format_duration(seconds)'
+      - 'format_duration(3903)'
+      - '"1h 5m 3s"'
+      - '"1h"'
+      - '"1h 1s"'
+      - '"0s"'
+    translation: |
+      寫一個 python function format_duration(seconds)，input 是一個整數的秒數，return 像 "1h 5m 3s" 這樣的 format。是 0 的部分就不要寫，所以 3600 就是 "1h"，3601 是 "1h 1s"。不要用 day，所以 hour 可以超過 24。如果 seconds 是 0，就 return "0s"。比如 format_duration(3903) 應該 return "1h 5m 3s"
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T19:  # make_usernames
+    english: |
+      write a python function make_usernames(full_names). for each name, make a username by turning it
+      lowercase and removing the spaces. if that username was already used by an earlier name in the
+      list, add 2 to the end, then 3 for the next one, and so on. return the list of usernames in the
+      same order. for example make_usernames(["Ana Cruz", "ana cruz", "Ben Lee", "ANA CRUZ"]) should
+      return ["anacruz", "anacruz2", "benlee", "anacruz3"]
+    keep_verbatim:
+      - 'make_usernames(full_names)'
+      - 'make_usernames(["Ana Cruz", "ana cruz", "Ben Lee", "ANA CRUZ"])'
+      - '["anacruz", "anacruz2", "benlee", "anacruz3"]'
+      - '"Ana Cruz"'
+      - '"ana cruz"'
+      - '"Ben Lee"'
+      - '"ANA CRUZ"'
+      - '"anacruz"'
+      - '"anacruz2"'
+      - '"benlee"'
+      - '"anacruz3"'
+    translation: |
+      寫一個 python function make_usernames(full_names)。每個名字變成小寫、拿掉 space，就是 username。如果這個 username 已經被 list 前面的名字用過了，就在後面加 2，再下一個加 3，這樣一直下去。照原本的順序 return username 的 list。比如 make_usernames(["Ana Cruz", "ana cruz", "Ben Lee", "ANA CRUZ"]) 應該 return ["anacruz", "anacruz2", "benlee", "anacruz3"]
+    status: draft
+    provenance: claude-draft
+    notes: ""
+  T20:  # reading_plan
+    english: |
+      i want to finish a book over some number of days. write a python function
+      reading_plan(total_pages, days) that returns a list with how many pages to read each day. split the
+      pages as evenly as possible, and if they don't divide evenly the earlier days get one extra page.
+      for example reading_plan(10, 3) should return [4, 3, 3]
+    keep_verbatim:
+      - 'reading_plan(total_pages, days)'
+      - 'reading_plan(10, 3)'
+      - '[4, 3, 3]'
+    translation: |
+      我想在幾天內看完一本書。寫一個 python function reading_plan(total_pages, days)，return 一個 list，是每天要看幾頁。頁數盡量平分，如果分不平均，前面的幾天每天多看一頁。比如 reading_plan(10, 3) 應該 return [4, 3, 3]
+    status: draft
+    provenance: claude-draft
+    notes: ""

@@ -7,11 +7,19 @@
 
 | Date | Decision |
 |---|---|
-| Oct 2 | Languages: all three (EN, TL, ZH). Tagalog written as natural **Taglish**; Mandarin in **Simplified** characters. |
+| Oct 2 | Languages: all three (EN, TL, ZH). Tagalog written as natural **Taglish**; Mandarin in **Simplified** characters. *(Superseded: see below.)* |
 | Oct 2 | Models: **Claude Sonnet 5.5** + **Gemini** (exact model TBD, to be checked against current lineup) + **qwen2.5:7b** (local, Ollama). |
 | Oct 2 | Budget: hard cap **$20 for Claude, $20 for Gemini**, enforced by the runner. |
 | Oct 2 | MAKE framing stays neutral ("can you just write it for me? i just need it to work."), with no "no explanation". |
 | Oct 2 | Pages: publish the whole repo root, with an `index.html` at the root (existing workflow kept). |
+| Oct 2 | Hidden tests + reference solutions stay private (gitignored) until the pilot run is done. |
+| Oct 2 | Mandarin condition is now **Chinoy (Filipino-Chinese) Mandarin**, replacing standard Mainland Mandarin. It mixes in English tech and everyday words, and comes in **two scripts**: Traditional (`zh_hant`, drafted) and Simplified (`zh_hans`, an OpenCC t2s conversion of zh_hant), so the two differ only in script. *(Superseded: see below.)* |
+| Oct 2 | **Hokkien/English** (`nan`): Clark writes it in informal romanization mixed with English, the way Chinoys text. First a comprehension test (2 framings + T01, T14; each model is asked to translate the prompts into English, and Clark judges whether it understood). Whether it becomes an exploratory 8-task condition depends on the result. *(Superseded: see below.)* |
+| Oct 2 | Claude drafts the Taglish and Mandarin translations, and Clark reviews and edits every item. Each item records `provenance` (claude-draft → clark-reviewed / clark-edited), and the write-up reports the counts as a limitation (Claude is also an audited model). *(Superseded: see below.)* |
+| Oct 2 | Taglish restarted from a **blank sheet that Clark writes from scratch** (`provenance: clark-written`). No Claude draft is used. |
+| Oct 2 | **Pilot = English + Taglish only.** Chinoy Mandarin and Hokkien move to future work (`drafts/future_languages/`): Clark speaks them conversationally but isn't an expert writer, and AI-drafted prompts would confound RQ3. Standard Mandarin is also out (Clark's Mandarin is conversational/business, not computer science). These become the "next step" framed in the SOP. |
+| Oct 2 | **Taglish sheet final** (22/22, all `clark-written`). Each item was compared against the English spec with Claude's help; Clark revised the items where meaning or wording diverged (T01, T04, T05, T06, T09, T14, T17, T18) and fixed typos and grammar slips. The write-up should describe this review. |
+| Oct 2 | Hand coding: a fixed **stratified sample of ~200 responses** (not a %), balanced across model × framing × language. |
 
 ## 1. What's in the repo now
 
@@ -37,10 +45,11 @@ who-gets-asked-to-think/
 ├── tasks/                     # the instrument
 │   └── T01_split_bill/
 │       ├── task.yaml          # id, function name, concepts, difficulty, probes
-│       ├── spec.en.md  spec.tl.md  spec.zh.md   # Clark writes/approves tl + zh
 │       ├── test_spec.py       # hidden, scored tests
 │       └── reference.py       # proves the tests are passable
-├── prompts/framings.yaml      # MAKE / LEARN wrappers × {en, tl, zh}
+├── prompts/
+│   ├── en.yaml                # CANONICAL English specs + framings + keep_verbatim lists
+│   ├── tl.yaml                # Taglish sheet (Clark-written), checked by scripts/check_translations.py
 ├── codebook/
 │   ├── codebook.md            # human-readable, versioned (v0, v1, …)
 │   └── codebook.yaml          # same content, machine-readable (for LLM pre-coding)
@@ -82,13 +91,13 @@ SDK + package versions, git commit of the repo`.
 |---|------|----|-----|-------------|
 | 0 | Repo hygiene: `.gitignore`, `.env.example`, secret-check hook, pin deps, restrict Pages to `docs/` | 1 h | 10 min review | Oct 3 |
 | 1 | Finalise tasks 1–5 from your feedback, draft tasks 6–20 + tests + references | 3 h | 2–3 h review | Oct 5 |
-| 2 | **You** write/verify Tagalog + Mandarin specs and framings | – | 5–7 h | Oct 8 |
+| 2 | **You** write the Taglish specs and framings (22 items) | – | 3–4 h | Oct 8 |
 | 3 | Model layer + runner + JSONL logging + cost meter; unit tests | 3 h | – | Oct 6 |
 | 4 | Code extractor + Docker sandbox + checker; validate on references + deliberately broken code | 3 h | – | Oct 7 |
 | 5 | **Dry run:** 2 tasks × all conditions; measure real tokens → updated cost estimate | 1 h | **approve cost** | Oct 8 |
 | 6 | Full pilot run | ~1–2 h wall clock | – | Oct 9 |
 | 7 | Codebook v1: you and I go through ~10 real responses together, then revise definitions | 1 h | 1.5 h | Oct 10 |
-| 8 | **You** hand-code a stratified sample (≈ 25–30% of responses, balanced across model × framing × language) | 1 h (tooling) | 4–6 h | Oct 14 |
+| 8 | **You** hand-code a stratified sample of ~200 responses (balanced across model × framing × language) | 1 h (tooling) | ~7 h | Oct 14 |
 | 9 | (Optional) LLM pre-codes everything; κ vs your codes per code; decide what's reportable | 2 h | 30 min decide | Oct 15 |
 | 10 | Analysis scripts + figures (descriptive; small-n, so no significance theatre) | 3 h | 1 h review | Oct 17 |
 | 11 | Write-up draft (4–6 pp) → PDF | 3 h | 3–4 h edit | Oct 21 |
@@ -100,16 +109,17 @@ SDK + package versions, git commit of the repo`.
 
 ## 4. Cost estimate (Claude API, before anything runs)
 
-Pilot = 20 tasks × 2 framings × 3 languages (EN, TL, ZH; decided Oct 2) = **120 prompts per model**. Assumptions (deliberately
+Pilot = 20 tasks × 2 framings × 2 languages (EN, Taglish) = **80 prompts per model**, × 3 reps = **240 calls per model** (720 responses across the 3 models). Assumptions (deliberately
 pessimistic): ~250 input tokens, and up to ~3,000 billed output tokens per call (visible answer
 plus thinking, which can't be switched off on current Claude models). Current list prices:
 
-| Model | $/M in · out | 120 calls (1 rep) | 360 calls (3 reps) |
+| Model | $/M in · out | 240 calls | 240 calls via Batch API |
 |---|---|---|---|
-| Claude Opus 5.5 | $4 · $20 | ~$7.50 | ~$22 |
-| Claude Sonnet 5.5 | $2 · $10 | ~$3.70 | ~$11 |
-| Claude Haiku 4.5 | $1 · $5 | ~$1.80 | ~$5.50 |
-| Local Ollama model | free | $0 | $0 |
+| **Claude Sonnet 5.5** (chosen) | $2 · $10 | ~$7.30 | ~$3.70 |
+| Gemini (model TBD) | TBD | TBD (to be checked) | TBD |
+| qwen2.5:7b (local) | free | $0 | $0 |
+
+Both caps are $20 per provider, enforced by the runner.
 
 The optional LLM pre-coding (step 9) adds roughly $2–5. The Batch API halves every Claude figure. **Running ThinkCheck
 costs under $30, so cost doesn't constrain which model we pick.** I'll replace these
@@ -125,8 +135,8 @@ numbers with measured ones after the dry run (step 5), and nothing runs before y
    parameters, and thinking is always on). We'll record "provider default" plus the `effort`
    level, and run **3 repetitions per cell** so the analysis can show within-model variability.
    For Ollama we set `temperature` and `seed` explicitly.
-3. **Local model choice affects RQ3.** Qwen models are developed in China and are strong in
-   Mandarin. Llama/Mistral are more English-centric. Either is defensible, but whichever we pick
+3. **Local model choice.** qwen2.5:7b is developed in China; Llama/Mistral are US/EU. With an
+   English–Taglish pilot this matters less than it did with Mandarin, but whichever we pick
    becomes part of the language story, and the write-up must name the confound.
 4. **Correctness depends on the extractor.** If a response contains several code blocks, which
    one counts? Proposed rule: the last block that defines the required function. "No complete
@@ -136,7 +146,7 @@ numbers with measured ones after the dry run (step 5), and nothing runs before y
 
 ## 6. Open questions (beyond the three in chat)
 
-- ~~Q1. Pilot languages~~ → **decided: all three (EN, TL, ZH).** Your step-2 load is now ~40 specs + 4 framings (≈ 5–7 h).
+- ~~Q1. Pilot languages~~ → **decided: English + Taglish** (see decisions log).
 - **Q2. MAKE framing strength:** neutral ("can you just write it for me?") or explicitly
   code-only ("just the code, no explanation")?
 - **Q3. Tagalog register:** formal Tagalog, or natural Taglish? (Taglish is more realistic for
