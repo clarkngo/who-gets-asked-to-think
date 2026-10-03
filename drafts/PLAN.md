@@ -20,6 +20,7 @@
 | Oct 2 | **Pilot = English + Taglish only.** Chinoy Mandarin and Hokkien move to future work (`drafts/future_languages/`): Clark speaks them conversationally but isn't an expert writer, and AI-drafted prompts would confound RQ3. Standard Mandarin is also out (Clark's Mandarin is conversational/business, not computer science). These become the "next step" framed in the SOP. |
 | Oct 2 | **Taglish sheet final** (22/22, all `clark-written`). Each item was compared against the English spec with Claude's help; Clark revised the items where meaning or wording diverged (T01, T04, T05, T06, T09, T14, T17, T18) and fixed typos and grammar slips. The write-up should describe this review. |
 | Oct 2 | Hand coding: a fixed **stratified sample of ~200 responses** (not a %), balanced across model × framing × language. |
+| Oct 3 | T04's within-list case test (`{"Tea": 1, "TEA": 2}` → `{"tea": 3}`) moved from scored tests to an **unscored probe**. The prompt never states that case, and scored tests check only what the prompt states. T13's banned-list case test stays scored, since "when checking" covers it. |
 
 ## 1. What's in the repo now
 

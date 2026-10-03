@@ -1,0 +1,85 @@
+# Probes: edge cases each prompt leaves OPEN. They are run and recorded, never scored.
+# They let us compare what the code actually does with the assumptions a response states
+# (codebook C2). Each probe is Python run against the extracted solution: earlier lines are
+# executed, and the value of the LAST line is recorded (or the exception type, if it raises).
+# Mirrors the "Probes" lines in drafts/sample_tasks.md.
+T01:
+  zero_people: 'split_bill(50, 0, 10)'
+  string_inputs: 'split_bill("100", "4", "20")'
+T02:
+  empty_list: 'longest_streak([])'
+  ints_not_bools: 'longest_streak([1, 1, 0, 1])'
+T03:
+  lowercase_pm: 'to_minutes("7:05 pm")'
+  no_space: 'to_minutes("07:05PM")'
+  invalid_hour: 'to_minutes("13:00 PM")'
+T04:
+  inputs_mutated: |
+    a = {"Eggs": 6}
+    b = {"eggs": 1}
+    merge_lists(a, b)
+    (a, b)
+  whitespace_in_name: 'merge_lists({" eggs ": 1}, {"eggs": 1})'
+  case_variants_same_list: 'merge_lists({"Tea": 1, "TEA": 2}, {})'
+T05:
+  empty_dict: 'best_average({})'
+  empty_score_list: 'best_average({"Ana": [], "Ben": [50]})'
+T06:
+  string_input: 'temperature_label("20")'
+  none_input: 'temperature_label(None)'
+T07:
+  punctuation: 'count_long_words("hello, world!", 6)'
+  double_space: 'count_long_words("a  bb", 2)'
+  empty_sentence: 'count_long_words("", 1)'
+T08:
+  extra_spaces: 'initials("  ana  cruz ")'
+  empty_name: 'initials("")'
+  hyphenated: 'initials("jean-luc picard")'
+T09:
+  empty_list: 'days_met_goal([], 5000)'
+  negative_steps: 'days_met_goal([100, -50], 0)'
+T10:
+  lowercase_coupon: 'price_after_coupon(30, "half")'
+  padded_coupon: 'price_after_coupon(30, " HALF ")'
+  negative_price: 'price_after_coupon(-5, "HALF")'
+T11:
+  empty_list: 'group_by_first_letter([])'
+  empty_name: 'group_by_first_letter([""])'
+T12:
+  empty_list: 'running_total([])'
+  float_amounts: 'running_total([0.1, 0.2])'
+  input_mutated: |
+    x = [1, 2]
+    running_total(x)
+    x
+T13:
+  punctuation_attached: 'censor("oh darn!", ["darn"])'
+  banned_inside_word: 'censor("darnit", ["darn"])'
+  empty_banned: 'censor("ok", [])'
+T14:
+  cancel_more_than_booked: 'seats_left(10, [-3])'
+  zero_capacity: 'seats_left(0, [1])'
+  zero_booking: 'seats_left(5, [0])'
+T15:
+  spaces: 'parse_scores("Ana: 90, Ben:75")'
+  duplicate_name: 'parse_scores("Ana:90,Ana:80")'
+  empty_text: 'parse_scores("")'
+  trailing_comma: 'parse_scores("Ana:90,")'
+T16:
+  unsorted_schedule: 'minutes_until_next_bus(["18:45", "06:30"], "12:00")'
+  empty_schedule: 'minutes_until_next_bus([], "12:00")'
+  no_leading_zero: 'minutes_until_next_bus(["6:30"], "05:00")'
+T17:
+  single_name: 'make_teams(["a"], 3)'
+  team_size_one: 'make_teams(["a", "b", "c"], 1)'
+  empty_list: 'make_teams([], 3)'
+T18:
+  negative: 'format_duration(-5)'
+  float_seconds: 'format_duration(61.5)'
+T19:
+  generated_name_collides: 'make_usernames(["Ana Cruz2", "Ana Cruz", "Ana Cruz"])'
+  empty_name: 'make_usernames([""])'
+  accents: 'make_usernames(["José Rizal"])'
+T20:
+  zero_days: 'reading_plan(10, 0)'
+  negative_pages: 'reading_plan(-3, 2)'
