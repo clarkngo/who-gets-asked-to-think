@@ -4,41 +4,235 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ThinkCheck (pilot)</title>
-  <meta name="description" content="A pilot audit of how AI coding assistants explain code to novice programmers in English, Tagalog, and Mandarin.">
+  <meta name="description" content="A pilot audit of whether AI coding assistants help novice programmers think about code, or just hand it over, when asked in English or Taglish.">
   <style>
-    :root { --bg: #fdfdfb; --fg: #1d1d1b; --muted: #5c5c57; --accent: #2a5d8f; }
-    @media (prefers-color-scheme: dark) {
-      :root { --bg: #161615; --fg: #ececea; --muted: #a3a39d; --accent: #8ab8e6; }
+    :root {
+      --bg: #fdfdfb; --fg: #1d1d1b; --muted: #5c5c57; --accent: #2a5d8f;
+      --surface: #f3f2ee; --border: #dddcd6; --done: #2f7d4f; --code: #3b3a36;
     }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161615; --fg: #ececea; --muted: #a3a39d; --accent: #8ab8e6;
+        --surface: #22221f; --border: #3a3a35; --done: #6cc28f; --code: #d9d8d2;
+      }
+    }
+    * { box-sizing: border-box; }
     body { background: var(--bg); color: var(--fg); margin: 0;
            font: 17px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
-    main { max-width: 42rem; margin: 0 auto; padding: 3rem 16px; }
-    h1 { font-size: 1.6rem; line-height: 1.3; margin-bottom: .25rem; }
-    .status { color: var(--muted); margin-top: 0; }
+    main { max-width: 44rem; margin: 0 auto; padding: 3rem 16px 4rem; }
+    h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 .25rem; }
+    h2 { font-size: 1.2rem; margin: 2.5rem 0 .5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    h3 { font-size: 1rem; margin: 1.25rem 0 .25rem; }
+    p, li { max-width: 40rem; }
+    .subtitle { font-size: 1.05rem; margin: 0 0 .25rem; }
+    .status { color: var(--muted); margin: 0; font-size: .95rem; }
+    .badge { display: inline-block; font-size: .8rem; padding: .1rem .5rem; border: 1px solid var(--border);
+             border-radius: 999px; color: var(--muted); margin-right: .35rem; }
     a { color: var(--accent); }
-    ol li { margin-bottom: .4rem; }
+    ol li, ul li { margin-bottom: .4rem; }
+    nav ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .25rem 1rem; font-size: .95rem; }
+    nav li { margin: 0; }
+    .numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: .5rem; margin: 1rem 0; }
+    .numbers div { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .6rem .75rem; }
+    .numbers strong { display: block; font-size: 1.4rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+    .numbers span { font-size: .85rem; color: var(--muted); }
+    .prompts { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: .75rem 0; }
+    @media (max-width: 640px) { .prompts { grid-template-columns: 1fr; } }
+    .prompt { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .75rem .9rem; }
+    .prompt .label { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .prompt p { margin: .35rem 0 0; font-size: .95rem; }
+    .prompt .frame { color: var(--muted); font-style: italic; }
+    code { font: .88em ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--code); }
+    dl { margin: .5rem 0; }
+    dt { font-weight: 600; margin-top: .75rem; }
+    dd { margin: .1rem 0 0; color: var(--fg); }
+    .timeline { list-style: none; padding: 0; }
+    .timeline li { display: grid; grid-template-columns: 5.5rem 1fr; gap: .75rem; margin-bottom: .35rem; }
+    .timeline .when { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .timeline .done { color: var(--done); }
+    .note { font-size: .9rem; color: var(--muted); }
+    footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: .9rem; color: var(--muted); }
   </style>
 </head>
 <body>
 <main>
-  <h1>Who Gets Asked to Think?</h1>
-  <p class="status">ThinkCheck · a pilot study · in progress (October 2026)</p>
+  <header>
+    <h1>Who Gets Asked to Think?</h1>
+    <p class="subtitle">An audit of AI coding assistants' explanations for novice programmers, in English and Taglish</p>
+    <p class="status"><span class="badge">Pilot</span><span class="badge">In progress</span>ThinkCheck · October 2026</p>
+  </header>
 
-  <p>When novice programmers ask AI coding assistants for help, do the answers help them judge the
-  code (by explaining how it works, stating its limits, or suggesting how to test it), or do they
-  just hand over the code? And does that change with what the novice asks for, or the language
-  they write in?</p>
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#why">Why</a></li>
+      <li><a href="#questions">Questions</a></li>
+      <li><a href="#design">Design</a></li>
+      <li><a href="#example">Example</a></li>
+      <li><a href="#coding">What we look for</a></li>
+      <li><a href="#status">Status</a></li>
+      <li><a href="#limits">Limitations</a></li>
+      <li><a href="#next">Next steps</a></li>
+    </ul>
+  </nav>
 
+  <h2 id="why">Why this matters</h2>
+  <p>Beginners increasingly learn to program alongside AI assistants. An answer that only hands over
+  working code can get the task done without teaching anything. An answer that explains how the code
+  works, says where it might break, and suggests how to check it gives the learner something to think
+  with. Earlier research found that generative AI can widen the gap between novices who are already
+  doing well and those who are struggling (Prather et al., 2024). It also found that learners who aren't
+  native English speakers face extra barriers in programming (Guo, 2018).</p>
+  <p>This pilot asks a narrow version of that question: <strong>when a beginner asks for help, does the
+  AI ask them to think?</strong> And does the answer change with how they ask, and the language they
+  ask in?</p>
+
+  <h2 id="questions">Research questions</h2>
   <ol>
-    <li>How often do responses support evaluative judgment rather than just provide code?</li>
-    <li>Does this differ between "just make it" and "help me learn" requests?</li>
-    <li>Does it differ by language: English or Taglish (the everyday Tagalog–English mix)?</li>
-    <li>Is the generated code correct when run against hidden tests?</li>
+    <li><strong>Evaluative judgment.</strong> How often do responses help the learner judge the code (by
+      explaining how it works, stating assumptions and limits, flagging uncertainty, suggesting how to
+      test it, or inviting the learner to predict or modify it), rather than just handing it over?</li>
+    <li><strong>Framing.</strong> Does this differ between "just make it" and "help me learn" requests?</li>
+    <li><strong>Language.</strong> Does it differ between English and Taglish, the everyday Tagalog–English
+      mix many Filipino learners type in?</li>
+    <li><strong>Correctness.</strong> Does the generated code actually work when run against hidden tests?</li>
   </ol>
 
-  <p>This is an audit of AI models, not a study of learners. Methods, data, and results will be
-  posted here as the pilot is completed. Source code:
-  <a href="https://github.com/clarkngo/who-gets-asked-to-think">GitHub repository</a>.</p>
+  <h2 id="design">Design</h2>
+  <p>This is an audit of AI models, not a study of people: no learners take part. The same beginner
+  requests go to several models, and every response is saved, run, and coded.</p>
+  <div class="numbers" role="list">
+    <div role="listitem"><strong>20</strong><span>original beginner Python tasks</span></div>
+    <div role="listitem"><strong>2</strong><span>framings: "just make it" / "help me learn"</span></div>
+    <div role="listitem"><strong>2</strong><span>languages: English / Taglish</span></div>
+    <div role="listitem"><strong>3</strong><span>models</span></div>
+    <div role="listitem"><strong>3</strong><span>runs of each prompt</span></div>
+    <div role="listitem"><strong>720</strong><span>responses in total</span></div>
+  </div>
+  <dl>
+    <dt>Tasks</dt>
+    <dd>Twenty short tasks written for this project, not taken from textbooks or courses. They cover
+      conditionals, loops, strings, lists and dictionaries, at three levels of difficulty. Examples include splitting a
+      restaurant bill, finding the longest practice streak, and planning pages to read per day.</dd>
+    <dt>Prompts</dt>
+    <dd>The task text is identical across the two framings; only the opening and closing sentences change.
+      The Taglish prompts were written by the author, a native speaker, rather than machine-translated,
+      and each was checked line by line against the English for meaning. Function names and examples stay in English in
+      both languages, as they would in a real classroom.</dd>
+    <dt>Models</dt>
+    <dd>Claude Sonnet 5.5 (Anthropic), a Gemini model (Google), and qwen2.5:7b, a free model run
+      locally. Every call logs the exact model ID, its settings, and a timestamp.</dd>
+    <dt>Correctness</dt>
+    <dd>The code in each response is run in an isolated sandbox (no network, time limits) against
+      hidden unit tests. The tests only check what the prompt actually asks for. Edge cases the prompt
+      leaves open are recorded but not scored.</dd>
+    <dt>Coding the explanations</dt>
+    <dd>A stratified sample of about 200 responses is hand-coded by the author with a written codebook.
+      If an AI model helps pre-code the rest, its agreement with the human codes (Cohen's κ) is
+      reported. The human codes count as ground truth.</dd>
+  </dl>
+
+  <h2 id="example">An example prompt</h2>
+  <p>Task T01, as a learner might type it. Each language has a "just make it" version and a
+    "help me learn" version.</p>
+  <div class="prompts">
+    <div class="prompt" lang="en">
+      <span class="label">English</span>
+      <p>i need a python function called <code>split_bill(total, people, tip_percent)</code>. it should
+        add the tip to the total and then split it evenly, so it returns how much each person pays,
+        rounded to 2 decimal places. for example <code>split_bill(100, 4, 20)</code> should give 30.0</p>
+    </div>
+    <div class="prompt" lang="tl">
+      <span class="label">Taglish</span>
+      <p>kailangan ko ng python function na pangalang <code>split_bill(total, people, tip_percent)</code>.
+        dapat netong i-dagdag ang tip sa total at tapos i-split evenly para mag-return kung magkano
+        babayaran ng tig-isang tao, rounded to 2 decimal places. halimbawa,
+        <code>split_bill(100, 4, 20)</code> dapat magresult sa 30.0</p>
+    </div>
+  </div>
+  <h3>The two framings</h3>
+  <div class="prompts">
+    <div class="prompt" lang="en">
+      <span class="label">"Just make it": English / Taglish</span>
+      <p class="frame">[task]</p>
+      <p>can you just write it for me? i just need it to work.</p>
+      <p lang="tl">pwede bang ikaw na lang mag-sulat para sa akin? kailangan ko lang itong gumana.</p>
+    </div>
+    <div class="prompt" lang="en">
+      <span class="label">"Help me learn": English / Taglish</span>
+      <p>i'm learning python and i want to actually understand this, not just copy it.</p>
+      <p lang="tl">nag-aaral ako ng python and gusto ko talaga itong matutunan at ayokong kopyahin lang.</p>
+      <p class="frame">[task]</p>
+      <p>can you help me learn how to do it?</p>
+      <p lang="tl">pwede mo ba akong turuan paano gawin?</p>
+    </div>
+  </div>
+  <p class="note">The "just make it" version deliberately doesn't say "no explanation". The point is to
+    see what the AI offers on its own when a learner just wants working code.</p>
+
+  <h2 id="coding">What we look for in each response</h2>
+  <dl>
+    <dt>Explains how it works</dt>
+    <dd>Says why the code works, not just what it does.</dd>
+    <dt>States assumptions or limits</dt>
+    <dd>For example: "this assumes there's at least one person; with 0 you'll get an error."</dd>
+    <dt>Flags uncertainty</dt>
+    <dd>Admits the answer might be wrong or hasn't been checked.</dd>
+    <dt>Suggests how to verify</dt>
+    <dd>Gives concrete inputs or tests the learner can try.</dd>
+    <dt>Invites the learner to think</dt>
+    <dd>Asks them to predict, explain, or change something specific.</dd>
+    <dt>Scaffolds instead of solving</dt>
+    <dd>Gives hints or a partial solution and leaves the rest to the learner.</dd>
+  </dl>
+  <p class="note">Measured automatically as well: whether the answer comes back in the learner's
+    language, how much is code versus explanation, and whether the code passes the tests.</p>
+
+  <h2 id="status">Status</h2>
+  <ul class="timeline">
+    <li><span class="when done">Oct 2 ✓</span><span>Research questions, task set, hidden tests, and English + Taglish prompts</span></li>
+    <li><span class="when">Oct 6–8</span><span>Model connections, prompt runner, and sandboxed code checker</span></li>
+    <li><span class="when">Oct 9</span><span>Pilot run (after the cost estimate is checked against the budget)</span></li>
+    <li><span class="when">Oct 10–14</span><span>Codebook refined on real responses, then hand coding</span></li>
+    <li><span class="when">Oct 15–17</span><span>Analysis and charts</span></li>
+    <li><span class="when">Oct 24</span><span>Short pilot write-up (PDF) and results posted here</span></li>
+  </ul>
+  <p class="note">Results, charts, the raw data, and the write-up will appear on this page once the pilot is run.
+    Nothing has been run yet.</p>
+
+  <h2 id="limits">Limitations</h2>
+  <ul>
+    <li><strong>It's a pilot.</strong> 20 tasks, 2 languages and 3 models. The findings are descriptive and
+      meant to test the method, not to settle the question.</li>
+    <li><strong>Models change.</strong> Hosted models are updated without notice, so results reflect the
+      model versions and dates logged for each call.</li>
+    <li><strong>Models, not products.</strong> Prompts go straight to each model, without the extra
+      instructions that apps like chatbots or code editors add, so results may differ from what learners
+      see in those apps.</li>
+    <li><strong>One coder.</strong> The explanations are hand-coded by one person. Any AI-assisted coding is checked against
+      those human codes.</li>
+    <li><strong>Claude's dual role.</strong> Claude, one of the audited models, also helped build the tools
+      and compare the Taglish prompts against the English. The prompts themselves were written by the author.</li>
+    <li><strong>No learners.</strong> This study says nothing about what students actually learn, only
+      about what the AI responses contain.</li>
+  </ul>
+
+  <h2 id="next">Next steps</h2>
+  <p>Many Filipino-Chinese (Chinoy) learners also write in Mandarin mixed with English, or text in
+    Hokkien. Extending the audit to these languages needs native-speaker collaborators to write and
+    check the prompts, so they are planned for after the pilot rather than included now.</p>
+
+  <h2>Builds on</h2>
+  <ul>
+    <li>Prather, J., et al. (2024). The Widening Gap: The Benefits and Harms of Generative AI for Novice
+      Programmers. <em>ICER '24</em>. <a href="https://doi.org/10.1145/3632620.3671116">doi:10.1145/3632620.3671116</a></li>
+    <li>Guo, P. J. (2018). Non-Native English Speakers Learning Computer Programming: Barriers, Desires,
+      and Design Opportunities. <em>CHI 2018</em>.</li>
+  </ul>
+
+  <footer>
+    <p>ThinkCheck is a pilot research project by Clark Ngo. Code, prompts, and (after the run) data:
+      <a href="https://github.com/clarkngo/who-gets-asked-to-think">github.com/clarkngo/who-gets-asked-to-think</a>.</p>
+  </footer>
 </main>
 </body>
 </html>
