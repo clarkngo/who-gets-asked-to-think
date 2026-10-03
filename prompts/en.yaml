@@ -1,0 +1,291 @@
+# CANONICAL English prompts for ThinkCheck. The pipeline reads this file.
+# drafts/sample_tasks.md is documentation; if they disagree, this file wins.
+# Line breaks inside a paragraph are only for readability here: the prompt builder joins them
+# into one line before sending, the way a person would type it. Blank lines are kept.
+language: en
+
+framings:
+  make: |
+    {spec}
+
+    can you just write it for me? i just need it to work.
+  learn: |
+    i'm learning python and i want to actually understand this, not just copy it.
+
+    {spec}
+
+    can you help me learn how to do it?
+
+tasks:
+  T01:
+    function: split_bill
+    spec: |
+      i need a python function called split_bill(total, people, tip_percent). it should add the tip
+      to the total and then split it evenly, so it returns how much each person pays, rounded to 2
+      decimal places. for example split_bill(100, 4, 20) should give 30.0
+    keep_verbatim:
+      - 'split_bill(total, people, tip_percent)'
+      - 'split_bill(100, 4, 20)'
+      - '30.0'
+  T02:
+    function: longest_streak
+    spec: |
+      i'm tracking which days i practiced guitar as a list of True/False, one per day. write a python
+      function longest_streak(days) that returns the longest number of days in a row i practiced.
+      for example longest_streak([True, True, False, True, True, True, False]) should return 3
+    keep_verbatim:
+      - 'longest_streak(days)'
+      - 'longest_streak([True, True, False, True, True, True, False])'
+      - '3'
+      - 'True'
+      - 'False'
+  T03:
+    function: to_minutes
+    spec: |
+      write a python function to_minutes(time_text) that takes a time like "7:05 PM" and returns how
+      many minutes have passed since midnight. so to_minutes("7:05 PM") should be 1145. the time is
+      always written like H:MM then a space then AM or PM. 12:00 AM is midnight and 12:00 PM is noon.
+    keep_verbatim:
+      - 'to_minutes(time_text)'
+      - 'to_minutes("7:05 PM")'
+      - '1145'
+      - '"7:05 PM"'
+      - 'H:MM'
+      - 'AM'
+      - 'PM'
+      - '12:00 AM'
+      - '12:00 PM'
+  T04:
+    function: merge_lists
+    spec: |
+      me and my roommate each have a shopping list as a python dictionary of item name to quantity.
+      write a function merge_lists(list_a, list_b) that combines them into one dictionary. if the same
+      item is on both lists add the quantities together. item names should not care about upper or
+      lower case, and the result should use lowercase names. example:
+      merge_lists({"Eggs": 6, "milk": 1}, {"eggs": 12, "Bread": 2}) gives {"eggs": 18, "milk": 1, "bread": 2}
+    keep_verbatim:
+      - 'merge_lists(list_a, list_b)'
+      - 'merge_lists({"Eggs": 6, "milk": 1}, {"eggs": 12, "Bread": 2})'
+      - '{"eggs": 18, "milk": 1, "bread": 2}'
+      - '"Eggs"'
+      - '"milk"'
+      - '"eggs"'
+      - '"Bread"'
+      - '"bread"'
+  T05:
+    function: best_average
+    spec: |
+      i have a dictionary of student names to a list of their quiz scores. write a python function
+      best_average(scores) that returns the name of the student with the highest average score. if two
+      students tie, return the name that comes first alphabetically.
+      for example best_average({"Ana": [80, 90], "Ben": [100, 60, 95], "Chen": [70]}) should return "Ana"
+    keep_verbatim:
+      - 'best_average(scores)'
+      - 'best_average({"Ana": [80, 90], "Ben": [100, 60, 95], "Chen": [70]})'
+      - '"Ana"'
+      - '"Ben"'
+      - '"Chen"'
+  T06:
+    function: temperature_label
+    spec: |
+      write a python function temperature_label(celsius) that gives a word for the weather. below 10
+      is "cold", 25 or above is "hot", and anything in between is "mild". for example
+      temperature_label(30) should return "hot"
+    keep_verbatim:
+      - 'temperature_label(celsius)'
+      - 'temperature_label(30)'
+      - '"hot"'
+      - '"cold"'
+      - '"mild"'
+  T07:
+    function: count_long_words
+    spec: |
+      write a python function count_long_words(sentence, min_length) that counts how many words in the
+      sentence have at least min_length letters. the words are separated by single spaces. for example
+      count_long_words("i love writing small programs", 5) should return 3
+    keep_verbatim:
+      - 'count_long_words(sentence, min_length)'
+      - 'count_long_words("i love writing small programs", 5)'
+      - '3'
+      - '"i love writing small programs"'
+  T08:
+    function: initials
+    spec: |
+      write a python function initials(full_name) that takes a name with the words separated by single
+      spaces and returns the first letter of each word in uppercase, each followed by a dot. for example
+      initials("maria clara santos") should return "M.C.S."
+    keep_verbatim:
+      - 'initials(full_name)'
+      - 'initials("maria clara santos")'
+      - '"M.C.S."'
+      - '"maria clara santos"'
+  T09:
+    function: days_met_goal
+    spec: |
+      i have a list of how many steps i walked each day. write a python function
+      days_met_goal(steps, goal) that returns how many days i walked at least goal steps. for example
+      days_met_goal([8000, 12000, 10000, 4000], 10000) should return 2
+    keep_verbatim:
+      - 'days_met_goal(steps, goal)'
+      - 'days_met_goal([8000, 12000, 10000, 4000], 10000)'
+      - '2'
+  T10:
+    function: price_after_coupon
+    spec: |
+      write a python function price_after_coupon(price, coupon). if the coupon is "HALF" the price is
+      cut in half. if the coupon is "TENOFF" take 10 off the price, but the price can never go below 0.
+      any other coupon does nothing and you just get the normal price. for example
+      price_after_coupon(30, "TENOFF") should return 20
+    keep_verbatim:
+      - 'price_after_coupon(price, coupon)'
+      - 'price_after_coupon(30, "TENOFF")'
+      - '20'
+      - '"HALF"'
+      - '"TENOFF"'
+  T11:
+    function: group_by_first_letter
+    spec: |
+      write a python function group_by_first_letter(names) that takes a list of names and returns a
+      dictionary. the keys are the first letter of the names in uppercase, and each value is the list of
+      names that start with that letter, in the same order they were in the original list. keep the
+      names spelled exactly as they were. for example
+      group_by_first_letter(["ana", "Ben", "alex", "bea"]) should return {"A": ["ana", "alex"], "B": ["Ben", "bea"]}
+    keep_verbatim:
+      - 'group_by_first_letter(names)'
+      - 'group_by_first_letter(["ana", "Ben", "alex", "bea"])'
+      - '{"A": ["ana", "alex"], "B": ["Ben", "bea"]}'
+      - '"ana"'
+      - '"Ben"'
+      - '"alex"'
+      - '"bea"'
+      - '"A"'
+      - '"B"'
+  T12:
+    function: running_total
+    spec: |
+      i'm tracking what i spend. write a python function running_total(expenses) that takes a list of
+      amounts and returns a new list where each number is the total spent so far. for example
+      running_total([5, 3, 10]) should return [5, 8, 18]
+    keep_verbatim:
+      - 'running_total(expenses)'
+      - 'running_total([5, 3, 10])'
+      - '[5, 8, 18]'
+  T13:
+    function: censor
+    spec: |
+      write a python function censor(text, banned) where text is a sentence with words separated by
+      single spaces and banned is a list of words. replace every word that is banned with stars, using
+      the same number of stars as the word has letters. upper or lower case shouldn't matter when
+      checking. all the other words stay exactly the same. for example
+      censor("this is so Darn annoying", ["darn"]) should return "this is so **** annoying"
+    keep_verbatim:
+      - 'censor(text, banned)'
+      - 'censor("this is so Darn annoying", ["darn"])'
+      - '"this is so **** annoying"'
+      - '"this is so Darn annoying"'
+      - '"darn"'
+  T14:
+    function: seats_left
+    spec: |
+      write a python function seats_left(capacity, bookings) for a small bus. bookings is a list of
+      numbers. a positive number means that many seats get booked. a negative number means that many
+      seats got cancelled. if a booking asks for more seats than are left, skip that booking completely.
+      return how many seats are left at the end. for example seats_left(10, [4, 5, 3, -2]) should return 3
+    keep_verbatim:
+      - 'seats_left(capacity, bookings)'
+      - 'seats_left(10, [4, 5, 3, -2])'
+      - '3'
+  T15:
+    function: parse_scores
+    spec: |
+      i have quiz scores saved as text like "Ana:90,Ben:75,Chen:88". write a python function
+      parse_scores(text) that turns it into a dictionary of name to score, where the score is an int.
+      for example parse_scores("Ana:90,Ben:75,Chen:88") should return {"Ana": 90, "Ben": 75, "Chen": 88}
+    keep_verbatim:
+      - 'parse_scores(text)'
+      - 'parse_scores("Ana:90,Ben:75,Chen:88")'
+      - '{"Ana": 90, "Ben": 75, "Chen": 88}'
+      - '"Ana:90,Ben:75,Chen:88"'
+      - '"Ana"'
+      - '"Ben"'
+      - '"Chen"'
+  T16:
+    function: minutes_until_next_bus
+    spec: |
+      write a python function minutes_until_next_bus(schedule, now). schedule is a list of bus times
+      like ["06:30", "12:15", "18:45"] in 24 hour time, already sorted. now is the current time in the
+      same format. return how many minutes until the next bus. if a bus leaves exactly now, that counts
+      and the answer is 0. if there are no more buses today, return the minutes until the first bus
+      tomorrow. for example minutes_until_next_bus(["06:30", "12:15", "18:45"], "12:00") should return 15
+    keep_verbatim:
+      - 'minutes_until_next_bus(schedule, now)'
+      - 'minutes_until_next_bus(["06:30", "12:15", "18:45"], "12:00")'
+      - '15'
+      - '"06:30"'
+      - '"12:15"'
+      - '"18:45"'
+      - '"12:00"'
+  T17:
+    function: make_teams
+    spec: |
+      write a python function make_teams(names, team_size) that splits a list of names into teams of
+      team_size, keeping the original order. the last team is allowed to be smaller, but if the last
+      team would only have 1 person, put that person into the team before it instead. return a list of
+      teams, where each team is a list of names. for example
+      make_teams(["a", "b", "c", "d", "e", "f", "g"], 3) should return [["a", "b", "c"], ["d", "e", "f", "g"]]
+    keep_verbatim:
+      - 'make_teams(names, team_size)'
+      - 'make_teams(["a", "b", "c", "d", "e", "f", "g"], 3)'
+      - '[["a", "b", "c"], ["d", "e", "f", "g"]]'
+      - '"a"'
+      - '"b"'
+      - '"c"'
+      - '"d"'
+      - '"e"'
+      - '"f"'
+      - '"g"'
+  T18:
+    function: format_duration
+    spec: |
+      write a python function format_duration(seconds) that takes a whole number of seconds and returns
+      it like "1h 5m 3s". leave out any part that is zero, so 3600 is just "1h" and 3601 is "1h 1s".
+      don't use days, so hours can go above 24. if seconds is 0 return "0s". for example
+      format_duration(3903) should return "1h 5m 3s"
+    keep_verbatim:
+      - 'format_duration(seconds)'
+      - 'format_duration(3903)'
+      - '"1h 5m 3s"'
+      - '"1h"'
+      - '"1h 1s"'
+      - '"0s"'
+  T19:
+    function: make_usernames
+    spec: |
+      write a python function make_usernames(full_names). for each name, make a username by turning it
+      lowercase and removing the spaces. if that username was already used by an earlier name in the
+      list, add 2 to the end, then 3 for the next one, and so on. return the list of usernames in the
+      same order. for example make_usernames(["Ana Cruz", "ana cruz", "Ben Lee", "ANA CRUZ"]) should
+      return ["anacruz", "anacruz2", "benlee", "anacruz3"]
+    keep_verbatim:
+      - 'make_usernames(full_names)'
+      - 'make_usernames(["Ana Cruz", "ana cruz", "Ben Lee", "ANA CRUZ"])'
+      - '["anacruz", "anacruz2", "benlee", "anacruz3"]'
+      - '"Ana Cruz"'
+      - '"ana cruz"'
+      - '"Ben Lee"'
+      - '"ANA CRUZ"'
+      - '"anacruz"'
+      - '"anacruz2"'
+      - '"benlee"'
+      - '"anacruz3"'
+  T20:
+    function: reading_plan
+    spec: |
+      i want to finish a book over some number of days. write a python function
+      reading_plan(total_pages, days) that returns a list with how many pages to read each day. split the
+      pages as evenly as possible, and if they don't divide evenly the earlier days get one extra page.
+      for example reading_plan(10, 3) should return [4, 3, 3]
+    keep_verbatim:
+      - 'reading_plan(total_pages, days)'
+      - 'reading_plan(10, 3)'
+      - '[4, 3, 3]'

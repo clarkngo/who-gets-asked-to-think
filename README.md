@@ -12,14 +12,17 @@
    flagging uncertainty, suggesting how to verify, inviting the learner to predict or modify)
    rather than just handing over code?
 2. Does this differ between **"just make it"** and **"help me learn"** requests?
-3. Does it differ by the **language** the novice writes in: English, Tagalog (Taglish), or Mandarin?
+3. Does it differ by the **language** the novice writes in: English or Taglish (the everyday
+   Tagalog–English mix many Filipino learners type in)?
 4. Is the generated code **correct** against hidden automated tests?
 
 ## Method (pilot)
 
 - 20 original beginner Python tasks, each with two framings and hidden unit tests.
-- Prompts in English, Taglish, and Simplified Mandarin, written or verified by a trilingual author.
-  No machine translation.
+- Prompts in English and Taglish. The author, a native speaker, wrote the Taglish prompts directly,
+  with no machine translation.
+- Chinoy (Filipino-Chinese) Mandarin and Hokkien are planned as a next step with native-speaker
+  collaborators. They are not part of this pilot.
 - Models: Claude Sonnet 5.5 (Anthropic API), a Gemini model (Google API), and qwen2.5:7b (local,
   via Ollama). Exact model IDs, parameters, and timestamps are logged for every call.
 - Code is executed in an isolated sandbox (Docker, no network, time limits).
