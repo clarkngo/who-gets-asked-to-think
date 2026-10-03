@@ -90,7 +90,7 @@ item is on both lists add the quantities together. item names should not care ab
 lower case, and the result should use lowercase names. example:
 merge_lists({"Eggs": 6, "milk": 1}, {"eggs": 12, "Bread": 2}) gives {"eggs": 18, "milk": 1, "bread": 2}
 ```
-**Probes:** whether the inputs are mutated · `merge_lists({" eggs ": 1}, {"eggs": 1})` (whitespace)
+**Probes:** whether the inputs are mutated · `merge_lists({" eggs ": 1}, {"eggs": 1})` (whitespace) · `merge_lists({"Tea": 1, "TEA": 2}, {})` (two spellings in one list; moved from the scored tests on Oct 3)
 
 ## T05 · best_average (aggregation, tie-breaking) · harder
 
