@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How ThinkCheck Works</title>
+  <meta name="description" content="A plain-language explainer and process diagram for ThinkCheck, a pilot audit of AI coding assistants' explanations for novice programmers.">
+  <style>
+    :root {
+      --bg: #fdfdfb; --fg: #1d1d1b; --muted: #5c5c57; --accent: #2a5d8f;
+      --surface: #f3f2ee; --border: #dddcd6; --done: #2f7d4f; --done-bg: #e8f3ec;
+      --next: #8a5a12; --next-bg: #f8efe0; --code: #3b3a36;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161615; --fg: #ececea; --muted: #a3a39d; --accent: #8ab8e6;
+        --surface: #22221f; --border: #3a3a35; --done: #6cc28f; --done-bg: #1c2b22;
+        --next: #e0b066; --next-bg: #2e2617; --code: #d9d8d2;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { background: var(--bg); color: var(--fg); margin: 0;
+           font: 17px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 16px 4rem; }
+    .back { font-size: .95rem; }
+    h1 { font-size: 1.7rem; line-height: 1.25; margin: .75rem 0 .25rem; }
+    h2 { font-size: 1.2rem; margin: 2.5rem 0 .5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    h3 { font-size: 1rem; margin: 0; }
+    p, li { max-width: 42rem; }
+    a { color: var(--accent); }
+    code { font: .88em ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--code); }
+    .lede { font-size: 1.1rem; }
+    .muted, .note { color: var(--muted); }
+    .note { font-size: .9rem; }
+
+    /* ---------- process flow ---------- */
+    .flow { list-style: none; padding: 0; margin: 1.25rem 0 .5rem; }
+    .flow > li { margin: 0; }
+    .card { position: relative; background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: .7rem .9rem .75rem 3.1rem; }
+    .card .num { position: absolute; left: .8rem; top: .75rem; width: 1.6rem; height: 1.6rem;
+                 border-radius: 50%; display: grid; place-items: center; font-size: .85rem; font-weight: 700;
+                 background: var(--bg); border: 1px solid var(--border); }
+    .card p { margin: .15rem 0 0; font-size: .93rem; }
+    .card .rq { font-size: .8rem; font-weight: 600; color: var(--accent); }
+    .chip { display: inline-block; font-size: .72rem; font-weight: 600; padding: .05rem .5rem;
+            border-radius: 999px; margin-left: .4rem; vertical-align: .1em; white-space: nowrap; }
+    .done .chip { color: var(--done); background: var(--done-bg); }
+    .partial .chip, .next .chip { color: var(--next); background: var(--next-bg); }
+    .done { border-left: 4px solid var(--done); }
+    .partial { border-left: 4px solid var(--next); }
+    .next { border-left: 4px dashed var(--border); }
+    .arrow { height: 1.6rem; display: flex; justify-content: center; }
+    .arrow::before { content: ""; width: 2px; background: var(--muted); margin-bottom: 6px; }
+    .arrow { position: relative; }
+    .arrow::after { content: ""; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+                    border: 6px solid transparent; border-top: 7px solid var(--muted); border-bottom: 0; }
+    .fork { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .9rem; }
+    .fork > div { display: flex; flex-direction: column; }
+    .fork > div > .card:not(.result) { flex: 1; }
+    .branch-label { font-size: .78rem; font-weight: 600; color: var(--muted); text-transform: uppercase;
+                    letter-spacing: .05em; text-align: center; margin-bottom: .3rem; }
+    .result { background: var(--bg); border-style: dashed; padding-left: .9rem; text-align: center; }
+    .result.done, .result.next, .result.partial { border-left-width: 1px; border-left-style: dashed; }
+    @media (max-width: 600px) {
+      .fork { grid-template-columns: 1fr; }
+      .fork > div + div { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed var(--border); }
+    }
+    .legend { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; font-size: .85rem; color: var(--muted); margin: .5rem 0 0; padding: 0; list-style: none; }
+    .legend span { display: inline-block; width: 1.4rem; height: .9rem; vertical-align: -.1em; margin-right: .35rem;
+                   border: 1px solid var(--border); background: var(--surface); border-radius: 3px; }
+    .legend .l-done { border-left: 4px solid var(--done); }
+    .legend .l-partial { border-left: 4px solid var(--next); }
+    .legend .l-next { border-left: 4px dashed var(--border); }
+
+    /* ---------- stage details ---------- */
+    .stage { margin: 1.5rem 0; }
+    .stage h3 { font-size: 1.05rem; margin-bottom: .25rem; }
+    .stage dl { margin: .25rem 0 0; display: grid; grid-template-columns: 6.5rem 1fr; gap: .2rem .75rem; }
+    .stage dt { font-weight: 600; color: var(--muted); font-size: .9rem; padding-top: .1rem; }
+    .stage dd { margin: 0; }
+    @media (max-width: 600px) { .stage dl { grid-template-columns: 1fr; } .stage dt { margin-top: .4rem; } }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .cols { grid-template-columns: 1fr; } }
+    .cols ul { padding-left: 1.1rem; margin: .25rem 0; }
+    .glossary dt { font-weight: 600; margin-top: .6rem; }
+    .glossary dd { margin: .1rem 0 0; }
+    footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: .9rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">← ThinkCheck home</a>
+  <h1>How ThinkCheck works</h1>
+  <p class="lede">We send the same beginner programming requests to several AI models, sometimes asking
+    only for code and sometimes asking to learn, in English or Taglish. Then we check two things: <strong>does
+    the code work</strong>, and <strong>does the answer help the learner think</strong>?</p>
+  <p class="muted">This is an audit of AI responses, not a study of people. No learners take part.</p>
+
+  <h2 id="flow">The process at a glance</h2>
+  <ol class="flow" aria-label="ThinkCheck process, seven steps">
+    <li>
+      <div class="card done">
+        <span class="num">1</span>
+        <h3>Tasks <span class="chip">done</span></h3>
+        <p>20 original beginner Python tasks, each with hidden tests and a few open edge cases ("probes").</p>
+      </div>
+    </li>
+    <li class="arrow" aria-hidden="true"></li>
+    <li>
+      <div class="card done">
+        <span class="num">2</span>
+        <h3>Prompts <span class="chip">done</span></h3>
+        <p>Each task × 2 framings ("just make it" / "help me learn") × 2 languages (English / Taglish)
+          = <strong>80 prompts</strong>.</p>
+      </div>
+    </li>
+    <li class="arrow" aria-hidden="true"></li>
+    <li>
+      <div class="card partial">
+        <span class="num">3</span>
+        <h3>Ask the models <span class="chip">1 of 3 models done</span></h3>
+        <p>Claude Sonnet 5.5, Gemini, and qwen2.5:7b (free, local). Each prompt 3 times
+          = <strong>720 responses</strong>.</p>
+      </div>
+    </li>
+    <li class="arrow" aria-hidden="true"></li>
+    <li>
+      <div class="card partial">
+        <span class="num">4</span>
+        <h3>Save every response <span class="chip">ongoing</span></h3>
+        <p>Word for word, with the exact model version, settings, and time of each call.</p>
+      </div>
+    </li>
+    <li class="arrow" aria-hidden="true"></li>
+    <li>
+      <div class="fork">
+        <div>
+          <p class="branch-label">Branch A: the code</p>
+          <div class="card done">
+            <span class="num">5a</span>
+            <h3>Run the code <span class="chip">built</span></h3>
+            <p>Pull out the code, run it in a locked-down sandbox against the hidden tests, record the probes.</p>
+          </div>
+          <div class="arrow" aria-hidden="true"></div>
+          <div class="card result done">
+            <h3>Does it work?</h3>
+            <p class="rq">RQ4 · correctness</p>
+          </div>
+        </div>
+        <div>
+          <p class="branch-label">Branch B: the explanation</p>
+          <div class="card next">
+            <span class="num">5b</span>
+            <h3>Code the explanations <span class="chip">next</span></h3>
+            <p>The author hand-codes ~200 responses with a written codebook. Any AI help is only used if it agrees with those codes.</p>
+          </div>
+          <div class="arrow" aria-hidden="true"></div>
+          <div class="card result next">
+            <h3>Does it help the learner think?</h3>
+            <p class="rq">RQ1 · RQ2 · RQ3</p>
+          </div>
+        </div>
+      </div>
+    </li>
+    <li class="arrow" aria-hidden="true"></li>
+    <li>
+      <div class="card next">
+        <span class="num">6</span>
+        <h3>Compare <span class="chip">next</span></h3>
+        <p>Side by side: "just make it" vs "help me learn", English vs Taglish, model vs model. Charts and tables.</p>
+      </div>
+    </li>
+    <li class="arrow" aria-hidden="true"></li>
+    <li>
+      <div class="card next">
+        <span class="num">7</span>
+        <h3>Share <span class="chip">next</span></h3>
+        <p>A short pilot write-up (PDF), results on this site, and the open data.</p>
+      </div>
+    </li>
+  </ol>
+  <ul class="legend" aria-label="Legend">
+    <li><span class="l-done"></span>done or built</li>
+    <li><span class="l-partial"></span>in progress</li>
+    <li><span class="l-next"></span>not started</li>
+  </ul>
+  <p class="note">Status as of October 3, 2026.</p>
+
+  <h2 id="steps">Each step, and why it's done this way</h2>
+  <p>Most of the design choices below exist for one reason: so that a difference between conditions can
+    only come from the thing being compared (the framing or the language), not from something else that
+    changed along with it.</p>
+
+  <div class="stage">
+    <h3>1 · Tasks</h3>
+    <dl>
+      <dt>What</dt><dd>Twenty short tasks a beginner might get, such as splitting a restaurant bill, finding a
+        practice streak, or planning pages to read per day. Each has hidden tests, plus a few edge cases the prompt
+        leaves open.</dd>
+      <dt>Why</dt><dd>The tasks are written fresh, so models can't just recite a memorised textbook answer.
+        The hidden tests check only what the prompt actually asks for. Open edge cases (e.g. "what if there are zero
+        people?") are recorded as <em>probes</em> and never scored, so a model isn't penalised for a reasonable choice.</dd>
+      <dt>Files</dt><dd><code>drafts/sample_tasks.md</code>, <code>tasks/probes.yaml</code>. The hidden tests stay private until the pilot is done.</dd>
+    </dl>
+  </div>
+
+  <div class="stage">
+    <h3>2 · Prompts</h3>
+    <dl>
+      <dt>What</dt><dd>Every task is wrapped in two framings, "just make it" and "help me learn", in English and in
+        Taglish, giving 80 prompts.</dd>
+      <dt>Why</dt><dd>The task text is identical across framings; only the opening and closing sentences change.
+        The Taglish was written by the author (a native speaker), not machine-translated, and each prompt was
+        checked against the English for meaning. Function names, examples, and quoted values are character-for-character
+        identical in both languages, and a script enforces this.</dd>
+      <dt>Files</dt><dd><code>prompts/en.yaml</code>, <code>prompts/tl.yaml</code>, <code>scripts/check_translations.py</code>, <code>thinkcheck/prompts.py</code></dd>
+    </dl>
+  </div>
+
+  <div class="stage">
+    <h3>3 · Ask the models</h3>
+    <dl>
+      <dt>What</dt><dd>Each prompt goes to each model three times.</dd>
+      <dt>Why</dt><dd>AI answers vary from one try to the next, so three runs show how stable a pattern is. We
+        add no instructions of our own, so we see each model's default behaviour. Paid models have a hard spending
+        cap, and an interrupted run picks up where it stopped without repeating calls.</dd>
+      <dt>Files</dt><dd><code>thinkcheck/models/</code>, <code>thinkcheck/run.py</code></dd>
+    </dl>
+  </div>
+
+  <div class="stage">
+    <h3>4 · Save every response</h3>
+    <dl>
+      <dt>What</dt><dd>One line per response in an append-only file, with the prompt, the full answer, the exact
+        model version, settings, timestamps, and the version of our own code.</dd>
+      <dt>Why</dt><dd>Hosted AI models change over time. Logging exactly what was asked, of which version, and when
+        means every later number can be traced back to a specific response. For the local model, rerunning with the
+        same settings reproduces the same answer word for word.</dd>
+      <dt>Files</dt><dd><code>data/raw/</code></dd>
+    </dl>
+  </div>
+
+  <div class="stage">
+    <h3>5a · Run the code (Branch A)</h3>
+    <dl>
+      <dt>What</dt><dd>The code is pulled out of each response and run in an isolated sandbox against the task's
+        hidden tests. Each response gets a result: passes all tests, fails some, crashes, or contains no code at all.</dd>
+      <dt>Why</dt><dd>The same extraction rule applies to every response, and demo lines like <code>print(...)</code>
+        are set aside so the tests judge the function itself. The sandbox has no internet, can't change files, and
+        has strict memory and time limits, because this is untrusted code written by an AI.</dd>
+      <dt>Files</dt><dd><code>thinkcheck/extract.py</code>, <code>sandbox/</code>, <code>thinkcheck/check.py</code>, <code>data/derived/checks/</code></dd>
+    </dl>
+  </div>
+
+  <div class="stage">
+    <h3>5b · Code the explanations (Branch B)</h3>
+    <dl>
+      <dt>What</dt><dd>The author reads a balanced sample of about 200 responses and marks, for each one, which of six
+        features it has: explains how the code works, states assumptions or limits, flags uncertainty, suggests how
+        to verify, invites the learner to predict or modify, or gives hints instead of a full solution.</dd>
+      <dt>Why</dt><dd>Judging an explanation takes human judgment, so the author's codes count as ground truth. If an AI
+        model helps code the remaining responses, its agreement with the author is measured (Cohen's κ) and
+        reported, and its codes are used only where that agreement holds up.</dd>
+      <dt>Files</dt><dd><code>drafts/codebook_v0.md</code> (coding tools to come)</dd>
+    </dl>
+  </div>
+
+  <div class="stage">
+    <h3>6–7 · Compare and share</h3>
+    <dl>
+      <dt>What</dt><dd>Descriptive comparisons by framing, language, and model, with charts, a 4–6 page pilot
+        write-up, and the open data.</dd>
+      <dt>Why</dt><dd>With 20 tasks and 3 models, this is a pilot. The goal is to show the method works and where
+        the interesting differences might be, not to make strong statistical claims.</dd>
+    </dl>
+  </div>
+
+  <h2 id="scope">What this study can and can't say</h2>
+  <div class="cols">
+    <div>
+      <h3>It can describe</h3>
+      <ul>
+        <li>What these AI models' answers contain when beginners ask for code or for help learning</li>
+        <li>Whether that changes between English and Taglish</li>
+        <li>Whether the code they give actually works</li>
+      </ul>
+    </div>
+    <div>
+      <h3>It can't tell us</h3>
+      <ul>
+        <li>What students actually learn (no learners take part)</li>
+        <li>How apps built on these models behave (they add their own instructions)</li>
+        <li>How other models or languages would behave (Chinoy Mandarin and Hokkien come next)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Framing</dt><dd>How the request is worded around the task: "just write it for me" vs "I want to understand this".</dd>
+    <dt>Taglish</dt><dd>The everyday mix of Tagalog and English that many Filipino learners type in.</dd>
+    <dt>Evaluative judgment</dt><dd>The learner's ability to judge whether code is right. An answer supports it when it explains, states limits, or shows how to check.</dd>
+    <dt>Hidden tests</dt><dd>Automated checks of whether the code does what the prompt asked. The models never see them.</dd>
+    <dt>Probe</dt><dd>An edge case the prompt leaves open. It's run and recorded, but never scored.</dd>
+    <dt>Sandbox</dt><dd>A sealed-off environment where untrusted code can run without touching anything else.</dd>
+    <dt>Codebook</dt><dd>The written definitions (with examples and non-examples) used to code each explanation consistently.</dd>
+    <dt>Cohen's κ (kappa)</dt><dd>A measure of how well two coders agree beyond chance. Here it compares any AI coding with the author's.</dd>
+  </dl>
+
+  <footer>
+    <p><a href="index.html">← Back to ThinkCheck home</a> · Code and data:
+      <a href="https://github.com/clarkngo/who-gets-asked-to-think">github.com/clarkngo/who-gets-asked-to-think</a></p>
+  </footer>
+</main>
+</body>
+</html>
