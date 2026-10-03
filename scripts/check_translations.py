@@ -12,42 +12,24 @@ Errors (exit code 1) are things that would break or confound the study:
   - an item is marked final but its provenance is still claude-draft (Clark must review it)
 Warnings are worth a look but don't block anything.
 """
-import re
 import sys
 from collections import Counter
 from pathlib import Path
 
 import yaml
 
+from thinkcheck.text import CJK, flatten
+
 ROOT = Path(__file__).resolve().parent.parent
 PROMPTS = ROOT / "prompts"
 STATUSES = {"todo", "draft", "final"}
 # Who produced the current text. Reported in the write-up, so keep it accurate.
 PROVENANCES = {"claude-draft", "clark-reviewed", "clark-edited", "clark-written"}
-CJK = re.compile(r"[一-鿿]")
 LOOKALIKES = "“”‘’，：（）［］｛｝"
 
 
 def norm(text):
     return (text or "").strip()
-
-
-def flatten(text):
-    """Join wrapped lines within a paragraph, as the prompt builder does before sending.
-
-    Lines are joined with a space, or with nothing when either side is a CJK character.
-    Blank lines (paragraph breaks) are kept.
-    """
-    paragraphs = re.split(r"\n\s*\n", norm(text))
-    out = []
-    for para in paragraphs:
-        lines = [line.strip() for line in para.split("\n") if line.strip()]
-        joined = lines[0] if lines else ""
-        for line in lines[1:]:
-            sep = "" if CJK.match(joined[-1]) or CJK.match(line[0]) else " "
-            joined += sep + line
-        out.append(joined)
-    return "\n\n".join(out)
 
 
 def check_item(label, english_now, item, keep, is_framing, lang, errors, warnings):
