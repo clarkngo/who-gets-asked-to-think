@@ -9,6 +9,7 @@ Properties that matter for the study:
 - Resumable: a (prompt, rep) that already has a successful record is skipped, so an interrupted
   run continues where it stopped and never double-counts.
 - Balanced if interrupted: all prompts are done for rep 0 before rep 1 starts, and so on.
+- Stops after 3 failed calls in a row (e.g. an exhausted free-tier daily quota); rerun later.
 - Budget stop: before each paid call, the runner checks that spend so far plus the worst-case
   cost of one more call stays under the provider's cap. Failed calls are logged, not retried
   in the same run.
@@ -32,6 +33,7 @@ from thinkcheck.prompts import PILOT_LANGUAGES, ROOT, build_prompts
 SCHEMA_VERSION = 1
 # Hard caps in USD per provider (decided Oct 2, 2026). Local models are free.
 BUDGET_USD = {"anthropic": 20.0, "google": 20.0, "ollama": 0.0}
+MAX_CONSECUTIVE_ERRORS = 3
 
 
 def seed_for(prompt_id: str, rep: int) -> int:
@@ -82,7 +84,9 @@ def run(model, prompts, reps, out: Path, budget: float, log=print) -> dict:
     env = environment()
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     todo = [(rep, p) for rep in range(reps) for p in prompts if (p["prompt_id"], rep) not in done]
-    counts = {"skipped_done": len(prompts) * reps - len(todo), "ok": 0, "error": 0, "budget_stop": False}
+    counts = {"skipped_done": len(prompts) * reps - len(todo), "ok": 0, "error": 0, "budget_stop": False,
+              "error_stop": False}
+    consecutive_errors = 0
     log(f"{model.key}: {len(todo)} calls to make ({counts['skipped_done']} already done), "
         f"spent so far ${spent:.4f} of ${budget:.2f} cap")
 
@@ -127,9 +131,11 @@ def run(model, prompts, reps, out: Path, budget: float, log=print) -> dict:
                 })
                 spent += g.cost_usd
                 counts["ok"] += 1
+                consecutive_errors = 0
             except Exception as exc:  # noqa: BLE001 - logged and kept; the next run retries it
                 record.update({"response_text": None, "cost_usd": 0.0, "error": f"{type(exc).__name__}: {exc}"})
                 counts["error"] += 1
+                consecutive_errors += 1
             record["finished_at"] = datetime.now(timezone.utc).isoformat()
             record["latency_ms"] = round((time.monotonic() - t0) * 1000)
             record["environment"] = env
@@ -138,6 +144,10 @@ def run(model, prompts, reps, out: Path, budget: float, log=print) -> dict:
             status = "ok" if record["error"] is None else f"ERROR {record['error'][:80]}"
             log(f"[{i}/{len(todo)}] rep {rep} {p['prompt_id']}: {status} "
                 f"({record['latency_ms'] / 1000:.1f}s, {record.get('output_tokens')} tokens)")
+            if consecutive_errors >= MAX_CONSECUTIVE_ERRORS:
+                counts["error_stop"] = True
+                log(f"STOPPING after {consecutive_errors} failed calls in a row; rerun later to continue")
+                break
     return counts
 
 
@@ -161,7 +171,7 @@ def main():
     out = Path(args.out) if args.out else raw_path(model.key)
     counts = run(model, prompts, args.reps, out, BUDGET_USD.get(model.provider, 0.0))
     print(json.dumps(counts))
-    sys.exit(1 if counts["error"] or counts["budget_stop"] else 0)
+    sys.exit(1 if counts["error"] or counts["budget_stop"] or counts["error_stop"] else 0)
 
 
 if __name__ == "__main__":
