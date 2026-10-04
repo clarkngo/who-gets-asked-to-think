@@ -1,4 +1,6 @@
 """Anthropic Claude via the official anthropic SDK (key in ANTHROPIC_API_KEY)."""
+import os
+
 import anthropic
 
 from thinkcheck.models.base import Generation, Model
@@ -22,7 +24,12 @@ class AnthropicModel(Model):
             raise ValueError(f"no price on file for {name}; add it to PRICES first")
         # Credentials come from the environment (ANTHROPIC_API_KEY, loaded from .env by the runner).
         # The SDK retries 408/409/429/5xx and connection errors with backoff.
-        self.client = anthropic.Anthropic(max_retries=5)
+        # An organization-level key (not scoped to a workspace) must name the workspace to use;
+        # set ANTHROPIC_WORKSPACE_ID in .env for that. The ID itself is not written to the data.
+        workspace = os.environ.get("ANTHROPIC_WORKSPACE_ID")
+        headers = {"anthropic-workspace-id": workspace} if workspace else None
+        self.workspace_header = bool(workspace)
+        self.client = anthropic.Anthropic(max_retries=5, default_headers=headers)
 
     def _cost(self, input_tokens, output_tokens):
         p = PRICES[self.name]
@@ -42,6 +49,7 @@ class AnthropicModel(Model):
                 "refusal_fallbacks": "not enabled: a refusal is logged as-is rather than rerouted to another model",
             },
             "system_prompt_sent": None,
+            "workspace_header_sent": self.workspace_header,
         }
 
     def max_cost_per_call(self) -> float:
