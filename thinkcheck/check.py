@@ -22,7 +22,7 @@ import yaml
 from thinkcheck.extract import extract
 from thinkcheck.sandbox import ROOT, image_id, run_in_sandbox, sha256, test_file
 
-CHECKER_VERSION = 1
+CHECKER_VERSION = 2  # v2: extraction rule refinements (see thinkcheck/extract.py)
 PROBES_FILE = ROOT / "tasks" / "probes.yaml"
 
 

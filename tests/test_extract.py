@@ -39,3 +39,29 @@ def test_main_guard_and_calling_assignments_are_dropped():
     ex = extract(resp, FN)
     assert "TIPS" in ex.code and "result" not in ex.code and "__main__" not in ex.code
     assert ex.dropped == {"Assign": 1, "If": 1}
+
+
+def test_teaching_fragments_using_undefined_names_are_dropped():
+    resp = ("First split it:\n```python\nparts = time_text.split()\nperiod = parts[1]\n```\n"
+            "Full version:\n```python\nLIMIT = 10\nDOUBLE = LIMIT * 2\ndef split_bill(a, b, c):\n    return a + DOUBLE\n```")
+    ex = extract(resp, FN)
+    assert ex.dropped == {"Assign": 1, "Assign (undefined name)": 1}
+    ns = {}
+    exec(ex.code, ns)  # must not raise NameError
+    assert ns["split_bill"](1, 0, 0) == 21
+
+
+def test_partial_redefinition_without_return_is_skipped():
+    resp = ("```python\ndef split_bill(a, b, c):\n    return a * 2\n```\nTo be safe add:\n"
+            "```python\ndef split_bill(a, b, c):\n    a = float(a)  # ... rest stays the same\n```")
+    ex = extract(resp, FN)
+    assert ex.definitions_of_function == 2 and ex.definitions_skipped_no_return == 1
+    ns = {}
+    exec(ex.code, ns)
+    assert ns["split_bill"](3, 0, 0) == 6
+
+
+def test_scaffold_with_placeholders_is_flagged_not_rejected():
+    resp = "```python\ndef split_bill(a, b, c):\n    total = 0\n    # TODO: add the tip\n    pass\n    return total\n```"
+    ex = extract(resp, FN)
+    assert ex.status == "ok" and ex.has_placeholder

@@ -21,6 +21,8 @@
 | Oct 2 | **Taglish sheet final** (22/22, all `clark-written`). Each item was compared against the English spec with Claude's help; Clark revised the items where meaning or wording diverged (T01, T04, T05, T06, T09, T14, T17, T18) and fixed typos and grammar slips. The write-up should describe this review. |
 | Oct 2 | Hand coding: a fixed **stratified sample of ~200 responses** (not a %), balanced across model × framing × language. |
 | Oct 3 | T04's within-list case test (`{"Tea": 1, "TEA": 2}` → `{"tea": 3}`) moved from scored tests to an **unscored probe**. The prompt never states that case, and scored tests check only what the prompt states. T13's banned-list case test stays scored, since "when checking" covers it. |
+| Oct 3 | **Gemini = `gemini-3.8-flash`** (Google's recommended Flash model, checked Oct 3), provider defaults (thinking on at its default level), **free tier**: nothing charged, list-price cost logged (~$1.32 for 240 calls). On the free tier Google may use prompts to improve its products; state this in the write-up. |
+| Oct 3 | **Extraction rule v2** (checker_version 2): top-level assignments are kept only if every name they use is already defined; definitions that never return a value are skipped when another definition exists; `has_placeholder` flags likely scaffolds (recorded, not scored). Triggered by Gemini's teaching responses (fragments like `period = parts[1]`, "add this line" snippets). Effect: qwen 0 status changes; Gemini 12 responses misjudged under v1 become pass. |
 
 ## 1. What's in the repo now
 
