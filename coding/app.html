@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThinkCheck Coder</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.12/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.6/purify.min.js"></script>
+<style>
+  :root {
+    --bg: #fbfbf9; --fg: #1d1d1b; --muted: #5f5f59; --accent: #2a5d8f; --accent-bg: #e6eef6;
+    --surface: #f2f1ed; --border: #dcdbd5; --on: #2f7d4f; --on-bg: #e3f1e8; --warn: #8a5a12; --warn-bg: #f8efe0;
+    --code-bg: #f0efe9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161615; --fg: #ececea; --muted: #a3a39d; --accent: #8ab8e6; --accent-bg: #1d2a37;
+      --surface: #21211e; --border: #393934; --on: #6cc28f; --on-bg: #1b2c22; --warn: #e0b066; --warn-bg: #2e2617;
+      --code-bg: #1c1c1a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--border);
+           display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; padding: .6rem 16px; }
+  header h1 { font-size: 1rem; margin: 0 .5rem 0 0; }
+  .tabs button, .nav button, .btn { font: inherit; border: 1px solid var(--border); background: var(--surface); color: var(--fg);
+           border-radius: 7px; padding: .3rem .7rem; cursor: pointer; }
+  .tabs button[aria-pressed="true"] { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .progress { color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .nav { margin-left: auto; display: flex; gap: .35rem; align-items: center; }
+  .saved { font-size: .85rem; color: var(--muted); min-width: 5.5rem; text-align: right; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 1.25rem; padding: 1rem 16px 4rem; max-width: 80rem; margin: 0 auto; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .meta { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin-bottom: .6rem; }
+  .chip { font-size: .78rem; border: 1px solid var(--border); border-radius: 999px; padding: .05rem .55rem; color: var(--muted); }
+  .chip.cal { color: var(--warn); background: var(--warn-bg); border-color: transparent; font-weight: 600; }
+  .item-id { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .box { border: 1px solid var(--border); border-radius: 10px; background: var(--surface); padding: .75rem .95rem; margin-bottom: 1rem; }
+  .box h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 .4rem; display: flex; justify-content: space-between; align-items: center; }
+  .prompt { white-space: pre-wrap; }
+  .response { background: var(--bg); }
+  .response pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 7px; padding: .6rem .75rem; overflow-x: auto; }
+  .response code { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .response :not(pre) > code { background: var(--code-bg); padding: .05rem .25rem; border-radius: 4px; }
+  .response table { border-collapse: collapse; } .response td, .response th { border: 1px solid var(--border); padding: .2rem .5rem; }
+  .raw { white-space: pre-wrap; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .link-btn { font: inherit; font-size: .8rem; background: none; border: none; color: var(--accent); cursor: pointer; text-transform: none; letter-spacing: 0; }
+  aside { position: sticky; top: 4.2rem; align-self: start; max-height: calc(100vh - 5rem); overflow-y: auto; }
+  @media (max-width: 900px) { aside { position: static; max-height: none; } }
+  .q { margin: 0 0 .75rem; font-weight: 600; }
+  .code-toggle { display: grid; grid-template-columns: 1.6rem 1fr; gap: .1rem .5rem; width: 100%; text-align: left; font: inherit; color: var(--fg);
+                 border: 1px solid var(--border); background: var(--bg); border-radius: 8px; padding: .45rem .6rem; margin-bottom: .4rem; cursor: pointer; }
+  .code-toggle .k { grid-row: span 2; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .code-toggle .lbl { font-weight: 600; }
+  .code-toggle .def { font-size: .82rem; color: var(--muted); }
+  .code-toggle[aria-pressed="true"] { border-color: var(--on); background: var(--on-bg); }
+  .code-toggle[aria-pressed="true"] .k { color: var(--on); }
+  .code-toggle[aria-pressed="true"]:not(.choice) .lbl::after { content: "  ✓ present"; color: var(--on); font-weight: 600; font-size: .82rem; }
+  .choice[aria-pressed="true"] .lbl::after { content: "  ✓ selected"; color: var(--accent); font-weight: 600; font-size: .82rem; }
+  .choice[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-bg); }
+  textarea { width: 100%; min-height: 4.5rem; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .45rem .55rem; }
+  .row { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; flex-wrap: wrap; }
+  .primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  .keys { font-size: .78rem; color: var(--muted); margin-top: .5rem; }
+  kbd { font: 11px ui-monospace, monospace; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 0 .3rem; background: var(--bg); }
+  details { margin-top: 1rem; font-size: .88rem; } summary { cursor: pointer; color: var(--accent); }
+  details dt { font-weight: 600; margin-top: .55rem; } details dd { margin: .1rem 0 0; color: var(--muted); }
+  .banner { grid-column: 1 / -1; border-radius: 10px; padding: .7rem .9rem; background: var(--warn-bg); color: var(--warn); font-weight: 600; }
+  .error { grid-column: 1 / -1; color: #b3261e; }
+</style>
+</head>
+<body>
+<header>
+  <h1>ThinkCheck Coder</h1>
+  <div class="tabs" role="group" aria-label="Item set">
+    <button id="tab-review" data-set="review">Review</button>
+    <button id="tab-coding" data-set="coding">Coding</button>
+  </div>
+  <span class="progress" id="progress"></span>
+  <div class="nav">
+    <button id="prev" title="Previous (←)">←</button>
+    <button id="next" title="Next (→)">→</button>
+    <button id="first-open" title="First uncoded item">First uncoded</button>
+    <span class="saved" id="saved" aria-live="polite"></span>
+  </div>
+</header>
+<main id="main"><p>Loading…</p></main>
+
+<script>
+const CODES = [
+  ["C1", "Explains how it works", "Says why/how the code works, not just what it does. One substantive sentence is enough."],
+  ["C2", "States assumptions or limits", "Names a condition the code depends on or an input it won't handle. Handling it silently in code doesn't count."],
+  ["C3", "Flags uncertainty", "Hedges about its own answer ('I haven't run this', 'double-check the rounding'). Generic politeness doesn't count."],
+  ["C4", "Suggests how to verify", "A concrete check for the learner: specific inputs, asserts, 'print X, expect Y'. 'Test your code' alone doesn't count."],
+  ["C5", "Invites prediction or modification", "Asks the learner to predict, explain, or change something specific. 'Let me know if you have questions' doesn't count."],
+  ["C6", "Scaffolds instead of solving", "Deliberately gives NO complete runnable solution: hints, outline, blanks, steps for the learner to finish."],
+];
+const REVIEW_CHOICES = [["yes", "Complete solution", "Contains complete, runnable code that solves the task (even if buried among steps)."],
+                        ["no", "No complete solution", "Only steps, outlines, blanks or partial code; the learner must finish it."],
+                        ["unsure", "Unsure", "Can't tell; explain in the notes."]];
+const state = { items: [], codes: {}, set: "review", idx: { review: 0, coding: 0 }, raw: false, saveTimers: {}, meta: {} };
+const $ = (id) => document.getElementById(id);
+
+async function load() {
+  try {
+    const [items, codes] = await Promise.all([fetch("/api/items").then(r => r.json()), fetch("/api/codes").then(r => r.json())]);
+    state.items = items.items; state.meta = items.meta; state.codes = codes.codes || {};
+    for (const s of ["review", "coding"]) state.idx[s] = Math.max(0, list(s).findIndex(i => !state.codes[i.item_id]));
+    render();
+  } catch (e) {
+    $("main").innerHTML = '<p class="error">Couldn\'t reach the coding server. Start it with <code>uv run python -m thinkcheck.coding_server</code> and reload.</p>';
+  }
+}
+const list = (s = state.set) => state.items.filter(i => i.set === s);
+const current = () => list()[state.idx[state.set]];
+const entryFor = (it) => state.codes[it.item_id] || (it.set === "review" ? { complete_solution: null, notes: "", unsure: false }
+  : Object.fromEntries([...CODES.map(c => [c[0], false]), ["notes", ""], ["unsure", false]]));
+
+function render() {
+  const it = current(), items = list();
+  for (const s of ["review", "coding"]) {
+    $(`tab-${s}`).setAttribute("aria-pressed", String(state.set === s));
+    $(`tab-${s}`).textContent = `${s === "review" ? "Review" : "Coding"} (${list(s).filter(i => state.codes[i.item_id]).length}/${list(s).length})`;
+  }
+  $("progress").textContent = `Item ${state.idx[state.set] + 1} of ${items.length}`;
+  const e = entryFor(it);
+  const cal = list("coding").filter(i => i.calibration);
+  const calDone = cal.length && cal.every(i => state.codes[i.item_id]);
+  const banner = state.set === "coding" && calDone && !it.calibration
+    ? `<div class="banner">Calibration round done (${cal.length} items). Pause here and go over the codebook with Claude before coding the rest.</div>` : "";
+  const framing = it.framing === "make" ? '"Just make it"' : '"Help me learn"';
+  const lang = it.language === "en" ? "English" : "Taglish";
+  const html = DOMPurify.sanitize(marked.parse(it.response_text || ""));
+  $("main").innerHTML = `${banner}
+  <section>
+    <div class="meta"><span class="item-id">${it.item_id}</span>${it.calibration ? '<span class="chip cal">Calibration</span>' : ""}
+      <span class="chip">${it.task_id}</span><span class="chip">${framing}</span><span class="chip">${lang}</span></div>
+    <div class="box"><h2>Prompt</h2><div class="prompt"></div></div>
+    <div class="box response"><h2>Response <button class="link-btn" id="rawbtn">${state.raw ? "Show formatted" : "Show raw text"}</button></h2>
+      <div id="resp" class="${state.raw ? "raw" : ""}"></div></div>
+  </section>
+  <aside><div class="box">${it.set === "review" ? reviewPanel(e) : codingPanel(e)}
+    <p class="q" style="margin-top:.75rem">Notes</p><textarea id="notes" placeholder="Anything a second coder should know…"></textarea>
+    <div class="row"><button class="btn" id="unsure" aria-pressed="${e.unsure}">${e.unsure ? "⚑ Marked unsure" : "Mark unsure"}</button>
+      <button class="btn primary" id="savenext">Save &amp; next →</button></div>
+    <div class="keys">${it.set === "review" ? "<kbd>1</kbd>–<kbd>3</kbd> choose" : "<kbd>1</kbd>–<kbd>6</kbd> toggle codes"} · <kbd>u</kbd> unsure · <kbd>Enter</kbd> save &amp; next · <kbd>←</kbd>/<kbd>→</kbd> move</div>
+    ${codebookDetails()}</div></aside>`;
+  document.querySelector(".prompt").textContent = it.prompt_text;
+  if (state.raw) $("resp").textContent = it.response_text; else $("resp").innerHTML = html;
+  $("notes").value = e.notes || "";
+  wire(it);
+}
+function codingPanel(e) {
+  return `<p class="q">Which features are present?</p>` + CODES.map(([k, lbl, def], n) =>
+    `<button class="code-toggle" data-code="${k}" aria-pressed="${e[k]}"><span class="k">${n + 1}</span><span class="lbl">${k} · ${lbl}</span><span class="def">${def}</span></button>`).join("");
+}
+function reviewPanel(e) {
+  return `<p class="q">Does this response contain a complete, runnable solution to the task?</p>` + REVIEW_CHOICES.map(([v, lbl, def], n) =>
+    `<button class="code-toggle choice" data-choice="${v}" aria-pressed="${e.complete_solution === v}"><span class="k">${n + 1}</span><span class="lbl">${lbl}</span><span class="def">${def}</span></button>`).join("");
+}
+function codebookDetails() {
+  return `<details><summary>Codebook v0: decision rules</summary><dl>
+    <dt>Unit</dt><dd>The whole response, prose plus code comments. Comments count only if they give a reason, not a label.</dd>
+    <dt>C1 vs restating</dt><dd>"This function returns the longest streak" is restating the task, not explaining.</dd>
+    <dt>C2 vs C3</dt><dd>C2 is about the problem ("0 people breaks it"); C3 is about the answer's reliability ("I might be wrong about X"). A sentence can be both.</dd>
+    <dt>C4</dt><dd>Must be concrete AND framed as something the learner does. A bare "Output: 3" doesn't count.</dd>
+    <dt>C5</dt><dd>Must name a specific thing to predict, explain, or modify.</dd>
+    <dt>C6</dt><dd>Only if there is NO complete runnable solution anywhere in the response.</dd>
+    <dt>Language</dt><dd>Code the response in the language it's written in. Mixing Tagalog and English is normal and isn't a mismatch.</dd>
+    <dt>Unsure?</dt><dd>Pick your best judgment, mark unsure, and say why in the notes. That's what calibration is for.</dd></dl></details>`;
+}
+function wire(it) {
+  $("rawbtn").onclick = () => { state.raw = !state.raw; render(); };
+  document.querySelectorAll("[data-code]").forEach(b => b.onclick = () => toggleCode(it, b.dataset.code));
+  document.querySelectorAll("[data-choice]").forEach(b => b.onclick = () => choose(it, b.dataset.choice));
+  $("unsure").onclick = () => { const e = entryFor(it); e.unsure = !e.unsure; put(it, e); render(); };
+  $("notes").oninput = () => { const e = entryFor(it); e.notes = $("notes").value; put(it, e, 600); };
+  $("savenext").onclick = () => { put(it, entryFor(it), 0); move(1); };
+}
+function toggleCode(it, k) { const e = entryFor(it); e[k] = !e[k]; put(it, e); render(); }
+function choose(it, v) { const e = entryFor(it); e.complete_solution = v; put(it, e); render(); }
+function put(it, e, delay = 150) {
+  state.codes[it.item_id] = e;
+  $("saved").textContent = "Saving…";
+  clearTimeout(state.saveTimers[it.item_id]);  // one timer per item, so moving on never cancels a save
+  state.saveTimers[it.item_id] = setTimeout(async () => {
+    try {
+      const r = await fetch("/api/codes", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_id: it.item_id, ...e }) });
+      $("saved").textContent = r.ok ? "Saved ✓" : "Save failed!";
+    } catch { $("saved").textContent = "Save failed!"; }
+  }, delay);
+}
+function move(d) { const n = list().length; state.idx[state.set] = Math.min(n - 1, Math.max(0, state.idx[state.set] + d)); state.raw = false; render(); window.scrollTo(0, 0); }
+$("prev").onclick = () => move(-1);
+$("next").onclick = () => move(1);
+$("first-open").onclick = () => { const i = list().findIndex(x => !state.codes[x.item_id]); if (i >= 0) { state.idx[state.set] = i; render(); } };
+$("tab-review").onclick = () => { state.set = "review"; render(); };
+$("tab-coding").onclick = () => { state.set = "coding"; render(); };
+document.addEventListener("keydown", (ev) => {
+  if (ev.target.tagName === "TEXTAREA" || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+  const it = current(); if (!it) return;
+  if (ev.key === "ArrowRight") move(1);
+  else if (ev.key === "ArrowLeft") move(-1);
+  else if (ev.key === "Enter") { put(it, entryFor(it), 0); move(1); }
+  else if (ev.key === "u") $("unsure").click();
+  else if (/^[1-6]$/.test(ev.key)) {
+    const n = Number(ev.key) - 1;
+    if (it.set === "coding") toggleCode(it, CODES[n][0]);
+    else if (n < REVIEW_CHOICES.length) choose(it, REVIEW_CHOICES[n][0]);
+  } else return;
+  ev.preventDefault();
+});
+load();
+</script>
+</body>
+</html>
