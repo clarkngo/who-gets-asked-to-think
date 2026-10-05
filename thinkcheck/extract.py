@@ -1,6 +1,9 @@
 """Pull the solution code out of a model response.
 
 Rule (applied identically to every response):
+0. If a response has an odd number of ``` fence lines and doesn't start with one, the opening
+   fence was left out; the text before the first fence is treated as a code block
+   (`fence_repaired` records this).
 1. Take every fenced code block tagged python/py, or untagged. Blocks tagged as another language
    (bash, text, output, ...) are ignored.
 2. Parse each block on its own and skip any that aren't valid Python (e.g. REPL transcripts
@@ -13,11 +16,13 @@ Rule (applied identically to every response):
 4. If the required function is defined more than once, definitions that never return a value
    are skipped (e.g. an "add this line" snippet ending in "# ... rest stays the same"), since
    every task requires returning a value. Of the rest, the last definition wins.
-5. `has_placeholder` flags a chosen function that still contains `pass`, `...` or
-   NotImplementedError: likely deliberate scaffolding. It is recorded, not used for the status.
+5. `has_placeholder` flags a chosen function that still contains `pass`, `...` anywhere
+   (e.g. `return ...`, `tip = ...`), a fill-in blank name like `______`, or NotImplementedError: likely deliberate scaffolding.
+   The checker labels such code "scaffold" instead of "fail" when it doesn't pass every test.
 
 Version history: v1 kept any call-free assignment and always used the last definition;
-v2 (Oct 3, 2026) added the defined-names check, the no-return skip, and has_placeholder.
+v2 (Oct 3, 2026) added the defined-names check, the no-return skip, and has_placeholder;
+v3 (Oct 5, 2026) added the missing-opening-fence repair and catches `...` anywhere and `______` blanks as placeholders.
 
 Statuses: ok | no_code (no Python blocks) | unparseable (blocks, none valid) |
           no_function (valid code, but the required function isn't defined at top level)
@@ -40,6 +45,7 @@ class Extraction:
     blocks_total: int = 0           # all fenced blocks
     blocks_python: int = 0          # python/untagged blocks
     blocks_parsed: int = 0          # python blocks that parsed
+    fence_repaired: bool = False    # opening fence was missing (rule 0)
     definitions_of_function: int = 0
     definitions_skipped_no_return: int = 0
     has_placeholder: bool = False
@@ -51,9 +57,15 @@ def _calls_something(node) -> bool:
 
 
 def extract(response: str, function: str) -> Extraction:
-    blocks = FENCE.findall(response or "")
+    response = response or ""
+    fence_lines = sum(1 for line in response.splitlines() if line.strip().startswith("```"))
+    repaired = fence_lines % 2 == 1 and not response.lstrip().startswith("```")
+    if repaired:
+        response = "```\n" + response
+    blocks = FENCE.findall(response)
     python_blocks = [body for tag, body in blocks if tag.lower() in PYTHON_TAGS]
-    result = Extraction(status="no_code", blocks_total=len(blocks), blocks_python=len(python_blocks))
+    result = Extraction(status="no_code", blocks_total=len(blocks), blocks_python=len(python_blocks),
+                        fence_repaired=repaired)
     if not python_blocks:
         return result
 
@@ -118,7 +130,9 @@ def _has_placeholder(fn) -> bool:
     for n in ast.walk(fn):
         if isinstance(n, ast.Pass):
             return True
-        if isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) and n.value.value is Ellipsis:
+        if isinstance(n, ast.Constant) and n.value is Ellipsis:
+            return True
+        if isinstance(n, ast.Name) and len(n.id) >= 2 and set(n.id) == {"_"}:  # fill-in blank: ______
             return True
         if isinstance(n, ast.Raise) and "NotImplementedError" in ast.unparse(n):
             return True

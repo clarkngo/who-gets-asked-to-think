@@ -6,6 +6,8 @@ Usage:
 
 Status per response:
     pass | fail          extracted and ran; all / not all hidden tests passed
+    scaffold             ran, didn't pass every test, and still contains placeholders
+                         (`...`, `pass`, NotImplementedError): a deliberate outline, not a wrong answer
     import_error         the extracted code crashed or hung when loaded
     timeout | crashed    the sandbox container hit the wall-clock limit / died (e.g. memory)
     no_code | unparseable | no_function   nothing runnable to test (see thinkcheck/extract.py)
@@ -22,7 +24,7 @@ import yaml
 from thinkcheck.extract import extract
 from thinkcheck.sandbox import ROOT, image_id, run_in_sandbox, sha256, test_file
 
-CHECKER_VERSION = 2  # v2: extraction rule refinements (see thinkcheck/extract.py)
+CHECKER_VERSION = 3  # v2, v3: extraction refinements; v3 adds the scaffold status (see thinkcheck/extract.py)
 PROBES_FILE = ROOT / "tasks" / "probes.yaml"
 
 
@@ -46,6 +48,8 @@ def check_record(record: dict, probes: dict, image: str) -> dict:
         return out
     out["code_sha256"] = hashlib.sha256(ex.code.encode()).hexdigest()
     out.update(run_in_sandbox(ex.code, record["task_id"], probes.get(record["task_id"], {})))
+    if out["status"] in ("fail", "import_error") and ex.has_placeholder:
+        out["status"] = "scaffold"
     return out
 
 
