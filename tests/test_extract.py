@@ -65,3 +65,25 @@ def test_scaffold_with_placeholders_is_flagged_not_rejected():
     resp = "```python\ndef split_bill(a, b, c):\n    total = 0\n    # TODO: add the tip\n    pass\n    return total\n```"
     ex = extract(resp, FN)
     assert ex.status == "ok" and ex.has_placeholder
+
+
+def test_missing_opening_fence_is_repaired():
+    resp = ("def split_bill(a, b, c):\n    return a\n```\n\nExamples:\n\n"
+            "```python\nsplit_bill(1, 2, 3)  # 1\n```\n")
+    ex = extract(resp, FN)
+    assert ex.fence_repaired and ex.status == "ok"
+
+
+def test_balanced_fences_are_not_repaired():
+    ex = extract("Here:\n```python\ndef split_bill(a, b, c):\n    return a\n```", FN)
+    assert not ex.fence_repaired
+
+
+def test_ellipsis_anywhere_counts_as_placeholder():
+    ex = extract("```python\ndef split_bill(a, b, c):\n    tip = ...\n    return ...\n```", FN)
+    assert ex.status == "ok" and ex.has_placeholder
+
+
+def test_fill_in_blank_counts_as_placeholder():
+    ex = extract("```python\ndef split_bill(a, b, c):\n    if ______:\n        return 1\n    return 0\n```", FN)
+    assert ex.has_placeholder
